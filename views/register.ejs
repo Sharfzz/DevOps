@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f3f4f6;
+            /* Light gray page background */
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #d1d5db;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --input-focus-ring: rgba(59, 130, 246, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background-color: var(--bg-card);
+            width: 100%;
+            max-width: 440px;
+            /* Slightly wider for register form */
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            outline: none;
+            background-color: #fff;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--input-focus-ring);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 2.15rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-main);
+        }
+
+        .form-options {
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            accent-color: var(--accent);
+            cursor: pointer;
+            margin-top: 0.1rem;
+        }
+
+        .checkbox-group label {
+            line-height: 1.4;
+        }
+
+        .text-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+            color: var(--accent-hover);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .auth-footer {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Register for access to the Campus Portal</p>
+                </div>
+
+                <form action="/register" method="POST">
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" class="form-input"
+                            placeholder="Enter your full name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userId" class="form-label">Student/Staff ID</label>
+                        <input type="text" id="userId" name="userId" class="form-input" placeholder="Enter your ID"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role" class="form-label">Role</label>
+                        <select id="role" name="role" class="form-select" required>
+                            <option value="" disabled selected>Select your role</option>
+                            <option value="student">Student</option>
+                            <option value="admin">School Staff (Admin)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input"
+                            placeholder="Create a password" required>
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('password', 'eye-icon-1')">
+                            <svg id="eye-icon-1" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input"
+                            placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('confirmPassword', 'eye-icon-2')">
+                            <svg id="eye-icon-2" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">I agree to the <a href="#" class="text-link">campus terms of
+                                    use</a></label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Create Account</button>
+
+                    <div class="auth-footer">
+                        Already have an account? <a href="/login" class="text-link">Sign in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function togglePassword(inputId, iconId) {
+                const input = document.getElementById(inputId);
+                const icon = document.getElementById(iconId);
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+                } else {
+                    input.type = 'password';
+                    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                }
+            }
+        </script>
+</body>
+
+</html>
