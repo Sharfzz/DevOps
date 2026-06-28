@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Question</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/forum.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container">
+        <section class="ask-card">
+            <h2>Edit Question</h2>
+
+            <form action="/forum/edit/<%= question.id %>" method="POST">
+                <label for="module">Module</label>
+                <select name="module" id="module" required>
+                   <option value="C229 OS & Cloud Computing" <%= question.module === "C229 OS & Cloud Computing" ? "selected" : "" %>>C229 OS & Cloud Computing</option>
+                   <option value="C237 Software App Dev" <%= question.module === "C237 Software App Dev" ? "selected" : "" %>>C237 Software App Dev</option>
+                   <option value="C270 DevOps Essentials" <%= question.module === "C270 DevOps Essentials" ? "selected" : "" %>>C270 DevOps Essentials</option>
+                   <option value="C328 Intelligent Networks" <%= question.module === "C328 Intelligent Networks" ? "selected" : "" %>>C328 Intelligent Networks</option>
+                   <option value="C330 Linux Administration" <%= question.module === "C330 Linux Administration" ? "selected" : "" %>>C330  Linux Administration</option>
+                   <option value="Other" <%= question.module === "Other" ? "selected" : "" %>>Other</option>
+                </select>
+
+                <label for="title">Question Title</label>
+                <input type="text" id="title" name="title" value="<%= question.title %>" required>
+
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="5" required><%= question.description %></textarea>
+
+                <button type="submit" class="primary-btn">Save Changes</button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,5 +1,4 @@
 <style>
-    /* --- Navigation Bar --- */
     .navbar {
         position: sticky;
         top: 0;
@@ -11,9 +10,7 @@
         padding: 0 5%;
         background-color: var(--nav-bg);
         backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--nav-border);
-        transition: all 0.3s ease;
     }
 
     .navbar-brand {
@@ -21,54 +18,44 @@
         font-weight: 600;
         color: var(--text-main);
         text-decoration: none;
-        letter-spacing: -0.025em;
     }
 
     .navbar-menu {
         display: flex;
         align-items: center;
-        gap: 2.5rem;
+        gap: 2rem;
     }
 
     .nav-link {
         text-decoration: none;
         color: var(--text-muted);
-        font-size: 0.95rem;
         font-weight: 500;
-        transition: color 0.2s ease;
+        transition: .2s;
     }
 
     .nav-link:hover {
-        color: var(--text-main);
+        color: var(--accent);
     }
 
     .nav-link-login {
-        background-color: var(--text-main);
-        color: #FFFFFF;
-        padding: 0.5rem 1.25rem;
-        border-radius: 6px;
+        background: var(--accent);
+        color: white;
         text-decoration: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: background-color 0.2s ease, transform 0.1s ease;
+        padding: .6rem 1.2rem;
+        border-radius: 8px;
+        transition: .2s;
     }
 
     .nav-link-login:hover {
-        background-color: var(--text-muted);
-        color: #FFFFFF;
+        background: var(--accent-hover);
     }
 
-    .nav-link-login:active {
-        transform: scale(0.98);
-    }
-
-    /* Mobile Menu Toggle Button */
     .mobile-toggle {
         display: none;
         background: none;
         border: none;
         cursor: pointer;
-        padding: 0.5rem;
+        padding: 0.25rem;
     }
 
     .mobile-toggle svg {
@@ -76,56 +63,67 @@
         height: 24px;
         stroke: var(--text-main);
         stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
     }
 
-    @media (max-width: 768px) {
-        .navbar-menu {
-            display: none;
-            position: absolute;
-            top: 72px;
-            left: 0;
-            right: 0;
-            background-color: var(--bg-primary);
-            flex-direction: column;
-            align-items: center;
-            padding: 1.5rem 0;
-            gap: 1.5rem;
+    @media(max-width:768px){
+        .navbar-menu{
+            display:none;
+            position:absolute;
+            top:72px;
+            left:0;
+            right:0;
+            background: var(--card-bg);
+            flex-direction:column;
+            padding:25px;
+            gap:20px;
             border-bottom: 1px solid var(--nav-border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 24px rgba(0,0,0,.08);
         }
 
-        /* Class added via JS for mobile menu toggle */
-        .navbar-menu.is-open {
-            display: flex;
+        .navbar-menu.is-open{
+            display:flex;
         }
 
-        .mobile-toggle {
-            display: block;
+        .mobile-toggle{
+            display:block;
         }
     }
 </style>
 
-<!-- Navigation Bar -->
 <nav class="navbar">
-    <a href="#" class="navbar-brand">Campus Portal</a>
+    <a href="/" class="navbar-brand">Campus Portal</a>
 
-    <!-- Mobile Toggle Icon -->
-    <button class="mobile-toggle" aria-label="Toggle Menu"
-        onclick="document.getElementById('navMenu').classList.toggle('is-open')">
+    <button class="mobile-toggle" type="button" aria-label="Toggle navigation" id="mobileToggle">
         <svg viewBox="0 0 24 24" fill="none">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
     </button>
 
-    <!-- Navigation Links -->
-    <div id="navMenu" class="navbar-menu">
-        <a href="#" class="nav-link">Home</a>
-        <a href="#" class="nav-link">Student Forum</a>
-        <a href="#" class="nav-link">Room Booking</a>
-        <a href="#" class="nav-link-login">Login</a>
+    <div class="navbar-menu" id="navMenu">
+        <a href="/" class="nav-link">🏠 Home</a>
+        <a href="/forum" class="nav-link">📚 Study Help Forum</a>
+        <a href="/events" class="nav-link">📅 Events</a>
+        <a href="/rooms" class="nav-link">🏫 Room Booking</a>
+        <a href="/feedback" class="nav-link">💬 Feedback</a>
+        <a href="/login" class="nav-link-login">Login</a>
     </div>
 </nav>
+
+<script>
+    const mobileToggle = document.getElementById("mobileToggle");
+    const navMenu = document.getElementById("navMenu");
+
+    if (mobileToggle && navMenu) {
+        mobileToggle.addEventListener("click", () => {
+            navMenu.classList.toggle("is-open");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+                navMenu.classList.remove("is-open");
+            }
+        });
+    }
+</script>
