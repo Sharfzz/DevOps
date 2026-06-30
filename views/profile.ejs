@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 500px;">
+            <div class="auth-header">
+                <h1>My Account</h1>
+                <p>View your profile details</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 10px;"><strong>Full Name:</strong> <%= userProfile.fullName %></p>
+                <p style="margin-bottom: 10px;"><strong>Student/Staff ID:</strong> <%= userProfile.campusId %></p>
+                <p style="margin-bottom: 10px;"><strong>Role:</strong> <%= userProfile.role %></p>
+                <p style="margin-bottom: 10px;"><strong>Security Question:</strong> <%= userProfile.securityQuestion %></p>
+                <p style="margin-bottom: 10px;"><strong>Active Recovery Key:</strong> <span style="font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px;"><%= userProfile.recoveryKey %></span></p>
+            </div>
+
+            <form action="/profile/regenerate-key" method="POST" style="margin-top: 20px;">
+                <button type="submit" class="btn-submit">Regenerate Recovery Key</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -8,174 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #f3f4f6;
-            /* Light gray page background */
-            --bg-card: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --border-color: #d1d5db;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --input-focus-ring: rgba(59, 130, 246, 0.5);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Nav is at the top, rest of page takes available space */
-        .auth-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .auth-card {
-            background-color: var(--bg-card);
-            width: 100%;
-            max-width: 400px;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-
-        .auth-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .auth-header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-        }
-
-        .auth-header p {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-            position: relative;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-main);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-
-        .form-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--input-focus-ring);
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 1rem;
-            top: 2.15rem;
-            /* adjusted vertically based on padding */
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .password-toggle:hover {
-            color: var(--text-main);
-        }
-
-        .form-options {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 1rem;
-            height: 1rem;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .text-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .text-link:hover {
-            text-decoration: underline;
-            color: var(--accent-hover);
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 0.875rem;
-            background-color: var(--accent);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-submit:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .auth-footer {
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
@@ -190,8 +23,8 @@
 
                 <form action="/login" method="POST">
                     <div class="form-group">
-                        <label for="userId" class="form-label">Student/Staff ID</label>
-                        <input type="text" id="userId" name="userId" class="form-input" placeholder="Enter your ID"
+                        <label for="campusId" class="form-label">Student/Staff ID</label>
+                        <input type="text" id="campusId" name="campusId" class="form-input" placeholder="Enter your ID"
                             required>
                     </div>
 
@@ -213,7 +46,7 @@
                             <input type="checkbox" id="remember" name="remember">
                             <label for="remember">Remember me</label>
                         </div>
-                        <a href="#" class="text-link">Forgot password?</a>
+                        <a href="/forgot-password" class="text-link">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="btn-submit">Sign In</button>
