@@ -13,7 +13,7 @@
     "id": 3,
     "module": "C270 DevOps Essentials",
     "title": "How to use GitHub?",
-    "description": "Ionno how to use github helps",
+    "description": "Ionno how to use github helps, helpful replies only pls",
     "student": "Current Student",
     "createdAt": "2026-06-28T12:08:08.706Z",
     "solved": false,
@@ -23,6 +23,12 @@
         "text": "log in and google",
         "helpful": 0,
         "createdAt": "2026-06-28T12:08:28.118Z"
+      },
+      {
+        "student": "Current Student",
+        "text": "i oso cannot help bcuz idk",
+        "helpful": 0,
+        "createdAt": "2026-06-29T03:17:28.755Z"
       }
     ]
   },
