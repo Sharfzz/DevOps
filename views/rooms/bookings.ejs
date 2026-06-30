@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings – <%= room.name %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<%- include('../partials/navbar') %>
+
+<main class="main-container">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/rooms">All Rooms</a> /
+        <a href="/rooms/<%= room._id %>"><%= room.name %></a> /
+        <span>All Bookings</span>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (locals.success && success.length > 0) { %>
+        <div class="flash flash-success"><%= success %></div>
+    <% } %>
+    <% if (locals.error && error.length > 0) { %>
+        <div class="flash flash-error"><%= error %></div>
+    <% } %>
+
+    <div class="page-header">
+        <h2 class="page-title">All Bookings — <%= room.name %></h2>
+        <a href="/rooms/<%= room._id %>" class="btn btn-outline">← Back</a>
+    </div>
+
+    <% if (bookings.length === 0) { %>
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <p>No upcoming bookings for this room.</p>
+        </div>
+    <% } else { %>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Purpose</th>
+                        <th>Pax</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% bookings.forEach((b, i) => { %>
+                        <tr>
+                            <td class="text-muted"><%= i + 1 %></td>
+                            <td><%= new Date(b.date).toDateString() %></td>
+                            <td><span class="time-badge"><%= b.startTime %> – <%= b.endTime %></span></td>
+                            <td><%= b.studentName %></td>
+                            <td><code><%= b.studentId %></code></td>
+                            <td class="text-muted"><%= b.purpose %></td>
+                            <td><%= b.groupSize %></td>
+                            <td>
+                                <form action="/rooms/bookings/<%= b._id %>?_method=DELETE" method="POST"
+                                      onsubmit="return confirm('Cancel this booking?')">
+                                    <button class="btn btn-danger btn-sm" type="submit">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+</main>
+
+</body>
+</html>

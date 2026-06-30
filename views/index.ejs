@@ -5,26 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:;">
     <title>Campus Portal</title>
-    <!-- Use Inter font for a modern, clean look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Clean White Background */
             --bg-primary: #FFFFFF;
-
-            /* Text Colors */
             --text-main: #111827;
             --text-muted: #6B7280;
-
-            /* Navbar Variables */
             --nav-bg: rgba(255, 255, 255, 0.9);
             --nav-border: #E5E7EB;
-
-            /* Interaction Colors */
             --accent: #3B82F6;
             --accent-hover: #2563EB;
         }
@@ -44,8 +36,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-
-        /* --- Main Content Layout --- */
         .main-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -70,27 +60,58 @@
             color: var(--text-muted);
             font-size: 1.125rem;
             max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* Quick links to features */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
             margin: 0 auto;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .feature-card {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 1.75rem 1.5rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            text-align: left;
         }
 
-        /* --- Responsive Styles --- */
-        @media (max-width: 768px) {
+        .feature-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
 
-            .hero h1 {
-                font-size: 2.5rem;
-            }
+        .feature-card-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -99,13 +120,26 @@
 
     <%- include('partials/navbar') %>
 
-        <!-- Main Content -->
-        <main class="main-container">
-            <section class="hero">
-                <h1>Welcome to Campus Portal</h1>
-                <p>Access your student resources, connect with peers, and manage your campus life efficiently.</p>
-            </section>
-        </main>
+    <main class="main-container">
+        <section class="hero">
+            <h1>Welcome to Campus Portal</h1>
+            <p>Access your student resources, connect with peers, and manage your campus life efficiently.</p>
+
+            <!-- Feature quick-links -->
+            <div class="feature-grid">
+                <a href="/rooms" class="feature-card">
+                    <div class="feature-card-icon">🏛️</div>
+                    <h3>Room Booking</h3>
+                    <p>Reserve library rooms for study and group projects.</p>
+                </a>
+                <a href="#" class="feature-card">
+                    <div class="feature-card-icon">💬</div>
+                    <h3>Student Forum</h3>
+                    <p>Connect and discuss with your fellow students.</p>
+                </a>
+            </div>
+        </section>
+    </main>
 
 </body>
 

@@ -42,6 +42,11 @@
         color: var(--text-main);
     }
 
+    .nav-link.active {
+        color: var(--text-main);
+        font-weight: 600;
+    }
+
     .nav-link-login {
         background-color: var(--text-main);
         color: #FFFFFF;
@@ -96,7 +101,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        /* Class added via JS for mobile menu toggle */
         .navbar-menu.is-open {
             display: flex;
         }
@@ -109,7 +113,7 @@
 
 <!-- Navigation Bar -->
 <nav class="navbar">
-    <a href="#" class="navbar-brand">Campus Portal</a>
+    <a href="/" class="navbar-brand">Campus Portal</a>
 
     <!-- Mobile Toggle Icon -->
     <button class="mobile-toggle" aria-label="Toggle Menu"
@@ -123,9 +127,9 @@
 
     <!-- Navigation Links -->
     <div id="navMenu" class="navbar-menu">
-        <a href="#" class="nav-link">Home</a>
+        <a href="/" class="nav-link">Home</a>
         <a href="#" class="nav-link">Student Forum</a>
-        <a href="#" class="nav-link">Room Booking</a>
+        <a href="/rooms" class="nav-link">Room Booking</a>
         <a href="#" class="nav-link-login">Login</a>
     </div>
 </nav>

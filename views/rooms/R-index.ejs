@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking – Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<%- include('../partials/navbar') %>
+
+<main class="main-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Library Room Booking</h2>
+            <p class="page-subtitle">Browse available rooms and reserve a slot for your session.</p>
+        </div>
+        <a href="/rooms/seed" class="btn btn-outline">+ Seed Sample Rooms</a>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (locals.success && success.length > 0) { %>
+        <div class="flash flash-success"><%= success %></div>
+    <% } %>
+    <% if (locals.error && error.length > 0) { %>
+        <div class="flash flash-error"><%= error %></div>
+    <% } %>
+
+    <!-- Date Filter -->
+    <div class="filter-bar">
+        <form method="GET" action="/rooms" class="filter-form">
+            <label class="filter-label">Check availability for:</label>
+            <input type="date" class="input-field" name="date" value="<%= today %>" min="<%= today %>" />
+            <button type="submit" class="btn btn-primary">Check</button>
+        </form>
+    </div>
+
+    <!-- Room Grid -->
+    <% if (rooms.length === 0) { %>
+        <div class="empty-state">
+            <div class="empty-icon">🚪</div>
+            <p>No rooms available. Click <strong>Seed Sample Rooms</strong> to get started.</p>
+        </div>
+    <% } else { %>
+        <div class="room-grid">
+            <% rooms.forEach(room => { %>
+                <div class="room-card">
+                    <div class="room-card-accent"></div>
+                    <div class="room-card-body">
+                        <h3 class="room-name"><%= room.name %></h3>
+                        <p class="room-desc"><%= room.description %></p>
+                        <div class="room-meta">
+                            <span class="meta-badge">👥 Up to <%= room.capacity %> pax</span>
+                        </div>
+                        <% if (room.amenities && room.amenities.length > 0) { %>
+                            <div class="amenities">
+                                <% room.amenities.forEach(a => { %>
+                                    <span class="amenity-tag">✓ <%= a %></span>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="room-card-footer">
+                        <a href="/rooms/<%= room._id %>?date=<%= today %>" class="btn btn-primary btn-full">
+                            View Availability →
+                        </a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</main>
+
+</body>
+</html>
