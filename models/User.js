@@ -13,8 +13,7 @@ const userSchema = new mongoose.Schema({
     match: /^[SEse]\d{7}$/
   },
   password: {
-    type: String,
-    required: true
+    type: String
   },
   role: {
     type: String,
@@ -23,17 +22,28 @@ const userSchema = new mongoose.Schema({
     default: 'Student'
   },
   securityQuestion: {
-    type: String,
-    required: true
+    type: String
   },
   securityAnswer: {
-    type: String,
-    required: true
+    type: String
   },
   recoveryKey: {
-    type: String,
-    required: true
-  }
+    type: String
+  },
+  isRegistered: {
+    type: Boolean,
+    default: false
+  },
+  course: { type: String },
+  school: { type: String },
+  personalEmail: { type: String },
+  campusEmail: { type: String },
+  contactHome: { type: String },
+  contactMobile: { type: String },
+  dob: { type: String },
+  sex: { type: String },
+  nationality: { type: String },
+  address: { type: String }
 });
 
 module.exports = mongoose.model('User', userSchema);

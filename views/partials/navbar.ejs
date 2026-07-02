@@ -1,34 +1,17 @@
-
-
-<!-- Navigation Bar -->
-<nav class="navbar">
-    <a href="#" class="navbar-brand">Campus Portal</a>
-
-    <!-- Mobile Toggle Icon -->
-    <button class="mobile-toggle" aria-label="Toggle Menu"
-        onclick="document.getElementById('navMenu').classList.toggle('is-open')">
-        <svg viewBox="0 0 24 24" fill="none">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
-
-    <!-- Navigation Links -->
-    <div id="navMenu" class="navbar-menu">
-        <a href="/" class="nav-link">Home</a>
-        <a href="#" class="nav-link">Student Forum</a>
-        <a href="#" class="nav-link">Room Booking</a>
-        
-        <% if (user) { %>
-            <a href="/profile" class="nav-link">Profile</a>
-            <% if (user.role === 'Admin') { %>
-                <a href="/admin/helpdesk" class="nav-link">Admin Panel</a>
+<nav style="background-color: #0f172a; border-bottom: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
+    <div style="width: 95%; max-width: 1540px; margin: 0 auto; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;">
+        <div style="color: #ffffff; font-weight: 700; font-size: 22px; letter-spacing: -0.5px;">Campus Portal</div>
+        <div style="display: flex; gap: 28px; align-items: center; font-size: 14px; font-weight: 500;">
+            <% if (typeof userProfile !== 'undefined' || typeof profile !== 'undefined') { %>
+                <a href="/" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">Home</a>
+                <a href="/forum" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">Student Forum</a>
+                <a href="/booking" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">Room Booking</a>
+                <a href="/profile" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">Profile</a>
+                <a href="/logout" style="color: #ffffff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.1)'">Logout</a>
+            <% } else { %>
+                <a href="/login" style="color: #94a3b8; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">Sign In</a>
+                <a href="/register" style="color: #ffffff; background: #2563eb; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">Register</a>
             <% } %>
-            <a href="/logout" class="nav-link-login">Logout</a>
-        <% } else { %>
-            <a href="/register" class="nav-link">Register</a>
-            <a href="/login" class="nav-link-login">Login</a>
-        <% } %>
+        </div>
     </div>
 </nav>

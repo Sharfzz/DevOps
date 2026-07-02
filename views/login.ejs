@@ -14,8 +14,94 @@
 <body>
     <%- include('partials/navbar') %>
 
-        <div class="auth-container">
-            <div class="auth-card">
+        <style>
+            /* New Split Layout Styles */
+            .split-layout {
+                display: flex;
+                min-height: 85vh;
+            }
+            .brand-panel {
+                flex: 1;
+                background: linear-gradient(135deg, #1e293b, #312e81);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                padding: 2rem;
+                text-align: center;
+            }
+            .brand-panel h1 {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                font-weight: 600;
+            }
+            .brand-panel p {
+                font-size: 1.1rem;
+                opacity: 0.9;
+                max-width: 80%;
+                line-height: 1.5;
+            }
+            .form-panel {
+                flex: 1;
+                background-color: #f8fafc;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            /* Override default auth-container */
+            .form-panel .auth-container {
+                min-height: auto;
+                background: transparent;
+                padding: 2rem;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            /* Card Refinements */
+            .form-panel .auth-card {
+                background-color: #ffffff;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+                border: none;
+                width: 100%;
+                max-width: 450px;
+                border-radius: 12px;
+            }
+            /* Input & Button Refinements */
+            .form-panel .form-input, .form-panel .form-select {
+                border: 1px solid #cbd5e1;
+                transition: all 0.2s ease;
+            }
+            .form-panel .form-input:focus, .form-panel .form-select:focus {
+                outline: none;
+                border-color: #1e293b;
+                box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+            }
+            .form-panel .btn-submit {
+                background-color: #1e293b;
+                color: white;
+                transition: background-color 0.2s ease;
+            }
+            .form-panel .btn-submit:hover {
+                background-color: #334155;
+            }
+            @media (max-width: 768px) {
+                .split-layout {
+                    flex-direction: column;
+                }
+                .brand-panel {
+                    min-height: 250px;
+                }
+            }
+        </style>
+        <div class="split-layout">
+            <div class="brand-panel">
+                <h1>Campus Identity & Access Management</h1>
+                <p>Secure, centralized access to all your campus resources and applications.</p>
+            </div>
+            <div class="form-panel">
+                <div class="auth-container">
+                    <div class="auth-card">
                 <div class="auth-header">
                     <h1>Welcome Back</h1>
                     <p>Please enter your details to sign in</p>
@@ -55,6 +141,8 @@
                         Don't have an account? <a href="/register" class="text-link">Register here</a>
                     </div>
                 </form>
+            </div>
+        </div>
             </div>
         </div>
 

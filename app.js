@@ -57,7 +57,7 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { campusId, password } = req.body;
-        
+
         if (typeof campusId !== 'string' || typeof password !== 'string') {
             return res.status(400).send('Invalid input format');
         }
@@ -90,7 +90,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-    res.render('register');
+    res.render('register', { error: null, fullName: '', campusId: '', role: '', securityQuestion: '', securityAnswer: '' });
 });
 
 app.get('/logout', (req, res) => {
@@ -99,61 +99,87 @@ app.get('/logout', (req, res) => {
     });
 });
 
-app.get('/api/check-user', async (req, res) => {
-    try {
-        const { field, value } = req.query;
-        if (!field || !value) {
-            return res.status(400).json({ error: 'Missing field or value' });
-        }
-        if (field !== 'campusId' && field !== 'fullName') {
-            return res.status(400).json({ error: 'Invalid field' });
-        }
 
-        const query = {};
-        query[field] = value;
-
-        const user = await User.findOne(query);
-        res.json({ exists: !!user });
-    } catch (err) {
-        console.error('Check User Error:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
 
 app.post('/register', async (req, res) => {
     try {
-        const { fullName, campusId, password, role, securityQuestion, securityAnswer } = req.body;
+        const { fullName, campusId, password, securityQuestion, securityAnswer, role } = req.body;
+        const cleanId = campusId.trim();
+        const cleanName = fullName.trim();
 
-        // Prefix Enforcement
-        const prefix = campusId.charAt(0).toUpperCase();
-        if (role === 'Student' && prefix !== 'S') {
-            return res.status(400).send('Registration Failed: Student ID must start with S.');
+        if (role === 'Student' && cleanId.startsWith('E')) {
+            return res.render('register', { 
+                error: "Role mismatch: 'E' IDs are reserved for Staff.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
         }
-        if (role === 'Admin' && prefix !== 'E') {
-            return res.status(400).send('Registration Failed: Admin ID must start with E.');
+        if (role === 'Admin' && cleanId.startsWith('S')) {
+            return res.render('register', { 
+                error: "Role mismatch: 'S' IDs are reserved for Students.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
         }
 
-        // Uniqueness check
-        const existingUser = await User.findOne({
-            $or: [{ campusId: campusId }, { fullName: fullName }]
+        // 1. Block if already activated
+        const alreadyActive = await User.findOne({ campusId: cleanId, isRegistered: true });
+        if (alreadyActive) {
+            return res.render('register', { 
+                error: "This Campus ID has already been registered and activated.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
+        }
+
+        // 2. Find the pre-approved whitelist entry matching ID, Name, AND Role
+        const whitelistUser = await User.findOne({
+            campusId: cleanId,
+            fullName: cleanName,
+            role: role, // Crucial security fix: Enforce role mapping
+            isRegistered: false
         });
-        if (existingUser) {
-            if (existingUser.campusId === campusId) {
-                return res.status(400).send('Registration Failed: Campus ID already exists.');
-            }
-            if (existingUser.fullName === fullName) {
-                return res.status(400).send('Registration Failed: Full Name already exists.');
-            }
+
+        // 3. Reject if not on the whitelist
+        if (!whitelistUser) {
+            return res.render('register', { 
+                error: "Identity verification failed. Your ID and name do not match our campus directory enrollment logs.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
         }
 
-        const generatedKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+        // 4. Activate the account
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        await User.create({ fullName, campusId, password: hashedPassword, role, recoveryKey: generatedKey, securityQuestion, securityAnswer });
-        res.render('registration-success', { key: generatedKey });
-    } catch (err) {
-        console.error('Registration Database Error:', err);
-        res.status(400).send('Registration Failed: ' + err.message);
+        whitelistUser.password = await bcrypt.hash(password, salt);
+        whitelistUser.securityQuestion = securityQuestion;
+        whitelistUser.securityAnswer = securityAnswer;
+        
+        // Generate recovery key (using crypto)
+        const crypto = require('crypto');
+        whitelistUser.recoveryKey = "CP-" + crypto.randomBytes(4).toString('hex').toUpperCase();
+        
+        // Flip the activation switch
+        whitelistUser.isRegistered = true;
+        await whitelistUser.save();
+
+        res.redirect('/login');
+
+    } catch (error) {
+        console.error("Registration Error:", error);
+        res.status(500).send("Server Error during registration");
     }
 });
 
@@ -275,12 +301,12 @@ app.post('/admin/reset-user', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
         const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-        
+
         await User.findByIdAndUpdate(targetUserId, {
             password: hashedPassword,
             recoveryKey: newKey
         });
-        
+
         res.redirect('/admin/helpdesk');
     } catch (err) {
         console.error('Admin Reset Error:', err);
