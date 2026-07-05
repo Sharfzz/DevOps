@@ -1,3 +1,4 @@
+// TESTING GIT BRANCH SWITCHING
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
@@ -108,7 +109,7 @@ app.post('/register', async (req, res) => {
         const cleanName = fullName.trim();
 
         if (role === 'Student' && cleanId.startsWith('E')) {
-            return res.render('register', { 
+            return res.render('register', {
                 error: "Role mismatch: 'E' IDs are reserved for Staff.",
                 fullName: req.body.fullName,
                 campusId: req.body.campusId,
@@ -118,7 +119,7 @@ app.post('/register', async (req, res) => {
             });
         }
         if (role === 'Admin' && cleanId.startsWith('S')) {
-            return res.render('register', { 
+            return res.render('register', {
                 error: "Role mismatch: 'S' IDs are reserved for Students.",
                 fullName: req.body.fullName,
                 campusId: req.body.campusId,
@@ -131,7 +132,7 @@ app.post('/register', async (req, res) => {
         // 1. Block if already activated
         const alreadyActive = await User.findOne({ campusId: cleanId, isRegistered: true });
         if (alreadyActive) {
-            return res.render('register', { 
+            return res.render('register', {
                 error: "This Campus ID has already been registered and activated.",
                 fullName: req.body.fullName,
                 campusId: req.body.campusId,
@@ -151,7 +152,7 @@ app.post('/register', async (req, res) => {
 
         // 3. Reject if not on the whitelist
         if (!whitelistUser) {
-            return res.render('register', { 
+            return res.render('register', {
                 error: "Identity verification failed. Your ID and name do not match our campus directory enrollment logs.",
                 fullName: req.body.fullName,
                 campusId: req.body.campusId,
@@ -166,11 +167,11 @@ app.post('/register', async (req, res) => {
         whitelistUser.password = await bcrypt.hash(password, salt);
         whitelistUser.securityQuestion = securityQuestion;
         whitelistUser.securityAnswer = securityAnswer;
-        
+
         // Generate recovery key (using crypto)
         const crypto = require('crypto');
         whitelistUser.recoveryKey = "CP-" + crypto.randomBytes(4).toString('hex').toUpperCase();
-        
+
         // Flip the activation switch
         whitelistUser.isRegistered = true;
         await whitelistUser.save();
@@ -331,12 +332,12 @@ app.post('/financial/pay', async (req, res) => {
 app.post('/financial/add-card', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     if (req.session.user.role !== 'Student') return res.redirect('/');
-    
+
     // DevOps Security: Never save full card details. Mask all but the last 4 digits.
     const rawCard = req.body.cardNumber.replace(/\s/g, '');
     const lastFour = rawCard.slice(-4);
     const maskedCard = `**** **** **** ${lastFour}`;
-    
+
     const newPaymentMethod = {
         type: req.body.cardType,
         maskedNumber: maskedCard,
@@ -353,11 +354,11 @@ app.post('/financial/add-card', async (req, res) => {
 app.post('/financial/remove-card', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     if (req.session.user.role !== 'Student') return res.redirect('/');
-    
+
     await User.findByIdAndUpdate(req.session.user.id, {
         $pull: { 'financials.paymentMethods': { maskedNumber: req.body.maskedNumber } }
     });
-    
+
     res.redirect('/financial');
 });
 
