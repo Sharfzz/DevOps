@@ -43,7 +43,12 @@ const userSchema = new mongoose.Schema({
   dob: { type: String },
   sex: { type: String },
   nationality: { type: String },
-  address: { type: String }
+  address: { type: String },
+  financials: {
+    outstandingBalance: { type: Number, default: 0 },
+    dueDate: { type: String, default: "N/A" },
+    paymentMethods: { type: Array, default: [] }
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);

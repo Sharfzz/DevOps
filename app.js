@@ -314,6 +314,53 @@ app.post('/admin/reset-user', async (req, res) => {
     }
 });
 
+app.get('/financial', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    const user = await User.findById(req.session.user.id);
+    res.render('financial', { userProfile: user });
+});
+
+app.post('/financial/pay', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    await User.findByIdAndUpdate(req.session.user.id, { 'financials.outstandingBalance': 0 });
+    res.redirect('/financial');
+});
+
+app.post('/financial/add-card', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    
+    // DevOps Security: Never save full card details. Mask all but the last 4 digits.
+    const rawCard = req.body.cardNumber.replace(/\s/g, '');
+    const lastFour = rawCard.slice(-4);
+    const maskedCard = `**** **** **** ${lastFour}`;
+    
+    const newPaymentMethod = {
+        type: req.body.cardType,
+        maskedNumber: maskedCard,
+        brand: "VISA / Mastercard"
+    };
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+        $push: { 'financials.paymentMethods': newPaymentMethod }
+    });
+
+    res.redirect('/financial');
+});
+
+app.post('/financial/remove-card', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    
+    await User.findByIdAndUpdate(req.session.user.id, {
+        $pull: { 'financials.paymentMethods': { maskedNumber: req.body.maskedNumber } }
+    });
+    
+    res.redirect('/financial');
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running successfully on http://localhost:${PORT}`);
