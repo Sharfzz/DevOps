@@ -3,39 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Question</title>
+    <title>Edit Question - Campus Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/forum.css">
 </head>
 <body>
     <%- include('partials/navbar') %>
 
     <div class="container">
-        <section class="ask-card">
-            <h2>Edit Question</h2>
+        <div class="hero">
+            <div class="hero-top">
+                <div>
+                    <h1>Edit Question</h1>
+                    <p>Update the question details below.</p>
+                </div>
+                <a href="/forum" class="theme-toggle" style="display:inline-flex;align-items:center;justify-content:center;">Back to Forum</a>
+            </div>
+        </div>
 
-            <form action="/forum/edit/<%= question.id %>" method="POST">
-                <label for="module">Module</label>
-                <select name="module" id="module" required>
-                   <option value="C229 OS & Cloud Computing" <%= question.module === "C229 OS & Cloud Computing" ? "selected" : "" %>>C229 OS & Cloud Computing</option>
-                   <option value="C237 Software App Dev" <%= question.module === "C237 Software App Dev" ? "selected" : "" %>>C237 Software App Dev</option>
-                   <option value="C270 DevOps Essentials" <%= question.module === "C270 DevOps Essentials" ? "selected" : "" %>>C270 DevOps Essentials</option>
-                   <option value="C328 Intelligent Networks" <%= question.module === "C328 Intelligent Networks" ? "selected" : "" %>>C328 Intelligent Networks</option>
-                   <option value="C330 Linux Administration" <%= question.module === "C330 Linux Administration" ? "selected" : "" %>>C330  Linux Administration</option>
-                   <option value="Other" <%= question.module === "Other" ? "selected" : "" %>>Other</option>
+        <div class="ask-card">
+            <h2>Edit Post</h2>
+
+            <form action="/forum/edit/<%= question._id %>" method="POST">
+                <label for="category">Category</label>
+                <select id="category" name="category" required onchange="toggleEditFields()">
+                    <option value="" disabled <%= !question.category ? 'selected' : '' %>>Select category</option>
+                    <option value="Academic Modules" <%= question.category === 'Academic Modules' ? 'selected' : '' %>>Academic Modules</option>
+                    <option value="General Enquiries" <%= question.category === 'General Enquiries' ? 'selected' : '' %>>General Enquiries</option>
                 </select>
 
-                <label for="title">Question Title</label>
-                <input type="text" id="title" name="title" value="<%= question.title %>" required>
+                <div id="academic-fields">
+                    <label for="school">School</label>
+                    <select id="school" name="school">
+                        <option value="" selected>Select school</option>
+                        <% Object.keys(academicModules).forEach(school => { %>
+                            <option value="<%= school %>" <%= question.school === school ? 'selected' : '' %>><%= school %></option>
+                        <% }) %>
+                    </select>
+
+                    <label for="module">Module</label>
+                    <select id="module" name="module">
+                        <option value="" selected>Select module</option>
+                        <% if (question.school && academicModules[question.school]) { %>
+                            <% academicModules[question.school].forEach(mod => { %>
+                                <option value="<%= mod %>" <%= question.module === mod ? 'selected' : '' %>><%= mod %></option>
+                            <% }) %>
+                        <% } %>
+                    </select>
+                </div>
+
+                <div id="general-fields">
+                    <label for="enquiryTopic">Enquiry Topic</label>
+                    <select id="enquiryTopic" name="enquiryTopic">
+                        <option value="" selected>Select topic</option>
+                        <% generalTopics.forEach(topic => { %>
+                            <option value="<%= topic %>" <%= question.enquiryTopic === topic ? 'selected' : '' %>><%= topic %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <label for="title">Title</label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                    value="<%= question.title %>"
+                >
 
                 <label for="description">Description</label>
-                <textarea id="description" name="description" rows="5" required><%= question.description %></textarea>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="6"
+                    required
+                ><%= question.description %></textarea>
 
                 <button type="submit" class="primary-btn">Save Changes</button>
             </form>
-        </section>
+        </div>
     </div>
+
+    <div id="academic-modules-data"
+     data-modules='<%- JSON.stringify(academicModules).replace(/'/g, "&apos;") %>'
+     style="display:none;"></div>
+
+<script>
+    function toggleEditFields() {
+        const category = document.getElementById('category').value;
+        const academicFields = document.getElementById('academic-fields');
+        const generalFields = document.getElementById('general-fields');
+        const school = document.getElementById('school');
+        const module = document.getElementById('module');
+        const enquiryTopic = document.getElementById('enquiryTopic');
+
+        if (category === 'Academic Modules') {
+            academicFields.style.display = 'block';
+            generalFields.style.display = 'none';
+            school.required = true;
+            module.required = true;
+            enquiryTopic.required = false;
+        } else if (category === 'General Enquiries') {
+            academicFields.style.display = 'none';
+            generalFields.style.display = 'block';
+            school.required = false;
+            module.required = false;
+            enquiryTopic.required = true;
+        } else {
+            academicFields.style.display = 'none';
+            generalFields.style.display = 'none';
+            school.required = false;
+            module.required = false;
+            enquiryTopic.required = false;
+        }
+    }
+
+    const academicModulesData = document.getElementById('academic-modules-data');
+    const modules = academicModulesData ? JSON.parse(academicModulesData.dataset.modules) : {};
+
+    document.getElementById('school').addEventListener('change', function () {
+        const moduleSelect = document.getElementById('module');
+        const selectedSchool = this.value;
+
+        moduleSelect.innerHTML = '<option value="" selected>Select module</option>';
+
+        if (selectedSchool && modules[selectedSchool]) {
+            modules[selectedSchool].forEach(mod => {
+                const opt = document.createElement('option');
+                opt.value = mod;
+                opt.textContent = mod;
+                moduleSelect.appendChild(opt);
+            });
+        }
+    });
+
+    toggleEditFields();
+</script>
 </body>
 </html>

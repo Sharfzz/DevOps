@@ -1,89 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusHub</title>
-
-    <!-- Load saved theme -->
-    <script>
-        (() => {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "dark") {
-                document.documentElement.classList.add("dark");
-            }
-        })();
-    </script>
-    <link rel="stylesheet" href="/css/index.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-
 <body>
+  <%- include('partials/navbar') %>
 
-    <%- include('partials/navbar') %>
+  <% const isStaff = profile.campusId && profile.campusId.toUpperCase().startsWith('E'); %>
+  <% const role = isStaff ? 'Staff' : 'Student'; %>
+  <% const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=${isStaff ? '8b5cf6' : '3b82f6'}&color=fff&size=128`; %>
 
-    <main class="main-container">
+  <div class="dashboard-container">
+    <div class="greeting-banner <%= isStaff ? 'staff-banner' : '' %>">
+      <img src="<%= avatarUrl %>" alt="Profile Avatar" class="greeting-avatar">
+      <div class="greeting-text">
+        <h1>Welcome back, <%= profile.fullName %>! <span class="role-inline">(<%= role %>)</span></h1>
+        <p>Campus Portal</p>
+      </div>
+    </div>
 
-        <section class="hero">
-
-            <div class="hero-top">
-
-                <div>
-
-                    <h1>Welcome to CampusHub</h1>
-
-                    <p>
-                        Access your student resources, connect with peers and manage your campus life efficiently.
-                    </p>
-
-                </div>
-
-                <button id="themeToggle" class="theme-toggle" type="button">
-                    🌙 Dark Mode
-                </button>
-
+    <div class="dashboard-grid">
+      <div>
+        <div class="dash-card">
+          <h2 class="dash-card-header">Your Profile</h2>
+          <div class="profile-info">
+            <div class="info-row"><span class="info-label">Name</span><span class="info-value"><%= profile.fullName %></span></div>
+            <div class="info-row"><span class="info-label"><%= isStaff ? 'Staff ID' : 'Student ID' %></span><span class="info-value"><%= profile.campusId %></span></div>
+            <div class="info-row"><span class="info-label">Role</span><span class="role-badge <%= isStaff ? 'staff' : '' %>"><%= role %></span></div>
+            <div class="info-row">
+              <span class="info-label">Recovery Key</span>
+              <div class="recovery-key-container">
+                <span class="key-text" id="recovery-key-text">CP-**********</span>
+                <button type="button" class="btn-view" id="toggle-key-btn" data-key="<%= profile.recoveryKey %>" onclick="toggleRecoveryKey()">Reveal Key</button>
+              </div>
             </div>
+          </div>
 
-        </section>
+          <form action="/profile/regenerate-key" method="POST">
+            <button type="submit" class="btn-regenerate">Regenerate Key</button>
+          </form>
+        </div>
+      </div>
 
-    </main>
+      <div class="dashboard-right">
+        <div class="dash-card">
+          <h2 class="dash-card-header">Quick Access</h2>
+          <div class="quick-access-grid">
+            <% if (profile.role === 'Admin') { %>
+              <a href="/admin/helpdesk" class="qa-item staff"><div class="qa-icon">⚙️</div><span class="qa-text">Helpdesk</span></a>
+              <a href="/forum" class="qa-item staff"><div class="qa-icon">💬</div><span class="qa-text">Forum</span></a>
+              <a href="/profile" class="qa-item staff"><div class="qa-icon">👤</div><span class="qa-text">Profile</span></a>
+            <% } else { %>
+              <a href="/forum" class="qa-item"><div class="qa-icon">💬</div><span class="qa-text">Student Forum</span></a>
+              <a href="/profile" class="qa-item"><div class="qa-icon">👤</div><span class="qa-text">Profile</span></a>
+              <a href="/admin/helpdesk" class="qa-item"><div class="qa-icon">🛠️</div><span class="qa-text">Helpdesk</span></a>
+            <% } %>
+          </div>
+        </div>
 
-        <script>
+        <div class="dash-card">
+          <h2 class="dash-card-header">Notifications</h2>
+          <ul class="notif-list">
+            <li class="notif-item">
+              <div class="notif-icon-wrap">💬</div>
+              <div class="notif-content">
+                <h4>Forum Reply</h4>
+                <p>A classmate replied to a discussion thread.</p>
+                <div class="notif-time">2 hours ago</div>
+              </div>
+            </li>
+            <li class="notif-item success">
+              <div class="notif-icon-wrap">✅</div>
+              <div class="notif-content">
+                <h4>Booking Confirmed</h4>
+                <p>Study room booking has been approved.</p>
+                <div class="notif-time">Yesterday</div>
+              </div>
+            </li>
+            <li class="notif-item warning">
+              <div class="notif-icon-wrap">⚠️</div>
+              <div class="notif-content">
+                <h4>System Update</h4>
+                <p>Portal maintenance scheduled soon.</p>
+                <div class="notif-time">3 days ago</div>
+              </div>
+            </li>
+          </ul>
+        </div>
 
-        const themeToggle = document.getElementById("themeToggle");
+        <div class="dash-card">
+          <h2 class="dash-card-header">Portal Modules</h2>
+          <div class="module-stack">
+            <div class="module-item"><div><h4>Academic Records</h4><p>View transcripts and grades</p></div><button class="btn-module">Open</button></div>
+            <div class="module-item"><div><h4>Financial Hub</h4><p>Tuition and fee payments</p></div><button class="btn-module">Open</button></div>
+            <div class="module-item"><div><h4>Course Registration</h4><p>Enroll for next semester</p></div><button class="btn-module">Open</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function updateThemeButton() {
-
-            if (document.documentElement.classList.contains("dark")) {
-                themeToggle.textContent = "☀ Light Mode";
-            } else {
-                themeToggle.textContent = "🌙 Dark Mode";
-            }
-
-        }
-
-        updateThemeButton();
-
-        themeToggle.addEventListener("click", () => {
-
-            document.documentElement.classList.toggle("dark");
-
-            if (document.documentElement.classList.contains("dark")) {
-                localStorage.setItem("theme", "dark");
-            } else {
-                localStorage.setItem("theme", "light");
-            }
-
-            updateThemeButton();
-
-        });
-
-    </script>
-
+  <script nonce="random123">
+    function toggleRecoveryKey() {
+      const keyText = document.getElementById('recovery-key-text');
+      const btn = document.getElementById('toggle-key-btn');
+      const realKey = btn.dataset.key || '';
+      const maskedKey = 'CP-**********';
+      if (keyText.innerText === maskedKey) {
+        keyText.innerText = realKey || maskedKey;
+        btn.innerText = 'Hide Key';
+      } else {
+        keyText.innerText = maskedKey;
+        btn.innerText = 'Reveal Key';
+      }
+    }
+  </script>
 </body>
 </html>

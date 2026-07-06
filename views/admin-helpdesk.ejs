@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Helpdesk - Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="dashboard-container">
+        <div class="greeting-banner staff-banner">
+            <div class="greeting-text">
+                <h1>Admin Helpdesk</h1>
+                <p>Manage user recovery and reset access when needed.</p>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <h2 class="dash-card-header">Registered Users</h2>
+
+            <% if (!users || users.length === 0) { %>
+                <p class="no-data">No users found.</p>
+            <% } else { %>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Campus ID</th>
+                                <th>Role</th>
+                                <th>Registered</th>
+                                <th>Recovery Key</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td><%= user.fullName %></td>
+                                    <td><%= user.campusId %></td>
+                                    <td>
+                                        <span class="role-badge <%= user.role === 'Admin' ? 'staff' : '' %>">
+                                            <%= user.role %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <%= user.isRegistered ? 'Yes' : 'No' %>
+                                    </td>
+                                    <td class="mono-cell">
+                                        <%= user.recoveryKey || 'N/A' %>
+                                    </td>
+                                    <td>
+                                        <form action="/admin/reset-user" method="POST" style="margin:0;">
+                                            <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                            <button type="submit" class="btn-regenerate" style="width:auto; padding:0.7rem 1rem;">
+                                                Reset User
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <style>
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            min-width: 900px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .admin-table th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .admin-table td {
+            color: #0f172a;
+        }
+
+        .mono-cell {
+            font-family: monospace;
+        }
+
+        .no-data {
+            color: #64748b;
+            padding: 16px 0;
+        }
+    </style>
+</body>
+</html>
