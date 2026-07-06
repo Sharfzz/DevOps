@@ -1,10 +1,17 @@
-const express = require('express');
-const mongoose = require('mongoose');
+// TESTING GIT BRANCH SWITCHING
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const session = require('express-session');
-const flash = require('connect-flash');
-const methodOverride = require('method-override');
-
+const dns = require('node:dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+require('dotenv').config();
+console.log('Debug - MONGO_URI exists:', !!process.env.MONGO_URI);
+const express = require('express');
 const app = express();
+
+mongoose.connect(process.env.MONGO_URI, { family: 4 })
+    .then(() => console.log(' MongoDB Connected Successfully to CampusPortal!'))
+    .catch(err => console.error(' MongoDB Connection Error:', err));
 const PORT = 8080;
 
 // Connect to MongoDB
@@ -15,32 +22,9 @@ mongoose.connect('mongodb://localhost:27017/campus_portal')
 // Tell Express to use EJS as the templating engine
 app.set('view engine', 'ejs');
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(methodOverride('_method'));
-app.use(express.static('public'));
-
-// Session & Flash
-app.use(session({
-  secret: 'campusportalsecret',
-  resave: false,
-  saveUninitialized: false
-}));
-app.use(flash());
-
-// Make flash messages available to all views
-app.use((req, res, next) => {
-  res.locals.success = req.flash('success');
-  res.locals.error = req.flash('error');
-  next();
-});
-
-// ─── Routes ───────────────────────────────────────────────────────────────
-
-// Home page (skeleton)
+// When a user visits the root URL ('/'), render the index.ejs file
 app.get('/', (req, res) => {
-  res.render('index');
+    res.render('index');
 });
 
 // Room booking routes
