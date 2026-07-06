@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Helpdesk - Campus Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<<<<<<< HEAD
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -114,3 +119,102 @@
     </style>
 </body>
 </html>
+=======
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            font-family: 'Inter', sans-serif;
+            min-width: 400px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .styled-table thead tr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-align: left;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+            background-color: #ffffff;
+        }
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f9f9f9;
+        }
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #667eea;
+        }
+        .btn-small {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-small:hover {
+            background: #c53030;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+    <div style="padding: 40px 20px; max-width: 1000px; margin: 0 auto;">
+        <h1 style="color: #2d3748; margin-bottom: 10px;">Admin Helpdesk</h1>
+        <p style="color: #718096;">Manage users and perform administrative resets.</p>
+
+        <div class="table-container">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Student/Staff ID</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (users && users.length > 0) { %>
+                        <% users.forEach(u => { %>
+                            <tr>
+                                <td><%= u.fullName %></td>
+                                <td><%= u.campusId %></td>
+                                <td><%= u.role %></td>
+                                <td>
+                                    <form action="/admin/reset-user" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset the password and recovery key for <%= u.fullName %>?');">
+                                        <input type="hidden" name="targetUserId" value="<%= u._id %>">
+                                        <button type="submit" class="btn-small">Administrative Reset</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" style="text-align: center;">No users found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
+>>>>>>> origin/main

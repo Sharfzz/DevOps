@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Dashboard</title>
@@ -121,5 +122,677 @@
       }
     }
   </script>
+=======
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://ui-avatars.com; script-src 'self' 'unsafe-inline' 'nonce-random123';">
+    <title>Campus Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Base dashboard styles are built upon the modern css provided previously */
+        body {
+            background: #f4f7fb;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 5%;
+        }
+
+        /* Top Greeting Banner */
+        .greeting-banner {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .greeting-banner.staff-banner {
+            background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+        }
+
+        .greeting-banner::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05));
+            transform: skewX(-45deg);
+        }
+
+        .greeting-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            margin-right: 1.5rem;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            object-fit: cover;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .greeting-text {
+            z-index: 1;
+        }
+
+        .greeting-text h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .greeting-text p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        /* Split Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Base */
+        .dash-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .dash-card-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Profile Info */
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .info-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: #eff6ff;
+            color: #2563eb;
+            width: fit-content;
+            border: 1px solid #bfdbfe;
+        }
+
+        .role-badge.staff {
+            background: #fdf4ff;
+            color: #c026d3;
+            border: 1px solid #f5d0fe;
+        }
+
+        /* Recovery Key Masking */
+        .recovery-key-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafc;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-top: 0.25rem;
+        }
+
+        .key-text {
+            font-family: monospace;
+            font-size: 1rem;
+            color: #334155;
+            letter-spacing: 0.05em;
+            flex: 1;
+        }
+
+        .btn-view {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #3b82f6;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-view:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #2563eb;
+        }
+
+        /* Quick Access Icons */
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 1rem;
+        }
+
+        .qa-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem 0.5rem;
+            background: #ffffff;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .qa-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .qa-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            background: #eff6ff;
+            color: #3b82f6;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .qa-item:hover .qa-icon {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .qa-item.staff:hover {
+            border-color: #a855f7;
+            box-shadow: 0 8px 15px -3px rgba(168, 85, 247, 0.15);
+        }
+
+        .qa-item.staff .qa-icon {
+            background: #faf5ff;
+            color: #a855f7;
+        }
+
+        .qa-item.staff:hover .qa-icon {
+            background: #a855f7;
+            color: white;
+        }
+
+        .qa-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Notifications List */
+        .notif-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .notif-icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eff6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            flex-shrink: 0;
+        }
+
+        .notif-item.success .notif-icon-wrap {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .notif-item.warning .notif-icon-wrap {
+            background: #fffbeb;
+            color: #f59e0b;
+        }
+
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-content h4 {
+            font-size: 0.95rem;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .notif-content p {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
+
+        /* Panels Grid */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .panels-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Module Item */
+        .module-item {
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        .module-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .module-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .module-item h4 {
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .module-item p {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .btn-module {
+            padding: 0.5rem 1.25rem;
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-module:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* Regenerate Button */
+        .btn-regenerate {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-regenerate:hover {
+            background-color: #1e293b;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(15, 23, 42, 0.3);
+        }
+
+        /* Adaptive Navbar Styles */
+        .staff-nav {
+            background-color: rgba(49, 46, 129, 0.95) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .staff-nav .navbar-brand {
+            color: #ffffff !important;
+        }
+
+        .staff-nav .nav-link {
+            color: #cbd5e1 !important;
+        }
+
+        .staff-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        .staff-nav .nav-link-login {
+            background-color: #4f46e5 !important;
+            color: white !important;
+        }
+
+        .staff-nav .nav-link-login:hover {
+            background-color: #6366f1 !important;
+        }
+
+        .staff-nav .mobile-toggle svg {
+            stroke: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body style="background: radial-gradient(circle at top center, #f8fafc 0%, #e2e8f0 100%); margin: 0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh;">
+
+    <% 
+        // Determine role based on campusId
+        const isStaff = profile.campusId && profile.campusId.toUpperCase().startsWith('E');
+        const role = isStaff ? 'Staff' : 'Student';
+        
+        // Generate Avatar URL
+        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=${isStaff ? '8b5cf6' : '3b82f6'}&color=fff&size=128`;
+    %>
+
+        <%- include('partials/navbar') %>
+
+        <div class="dashboard-container" style="width: 95%; max-width: 1540px; margin: 40px auto; padding: 0; display: flex; flex-direction: column; gap: 32px;">
+
+            <!-- Top Greeting Banner -->
+            <div class="greeting-banner <%= isStaff ? 'staff-banner' : '' %>">
+                <img src="<%= avatarUrl %>" alt="Profile Avatar" class="greeting-avatar">
+                <div class="greeting-text">
+                    <h1>
+                        Welcome back, <%= profile.fullName %>!
+                            <span style="font-size: 1.25rem; font-weight: 500; color: rgba(255,255,255,0.8);">(<%= role
+                                    %>)</span>
+                    </h1>
+                    <p>Campus Portal</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start;">
+                <!-- Left Panel: Profile Card -->
+                <div class="dash-panel-left" style="width: 100%;">
+                    <div class="dash-card">
+                        <h2 class="dash-card-header">Your Profile</h2>
+
+                        <div class="profile-info">
+                            <div class="info-row">
+                                <span class="info-label">Name</span>
+                                <span class="info-value">
+                                    <%= profile.fullName %>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <%= isStaff ? 'Staff ID' : 'Student ID' %>
+                                </span>
+                                <span class="info-value">
+                                    <%= profile.campusId %>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Role</span>
+                                <span class="role-badge <%= isStaff ? 'staff' : '' %>">
+                                    <%= role %>
+                                </span>
+                            </div>
+
+                            <div class="info-row" style="margin-top: 0.5rem;">
+                                <span class="info-label">Recovery Key</span>
+                                <div class="recovery-key-container">
+                                    <span class="key-text" id="recovery-key-text">CP-**********</span>
+                                    <button type="button" class="btn-view" id="toggle-key-btn"
+                                        data-key="<%= profile.recoveryKey %>" onclick="toggleRecoveryKey()">Reveal
+                                        Key</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="/profile/regenerate-key" method="POST">
+                            <button type="submit" class="btn-regenerate">Regenerate Key</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Dashboard Content -->
+                <div class="dash-panel-right" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+
+                    <!-- Quick Access Panel -->
+                    <div class="dash-card" style="grid-column: span 2;">
+                        <h2 class="dash-card-header">Quick Access</h2>
+                        <div class="quick-access-grid">
+                            <% if (profile.role === 'Admin') { %>
+                                    <a href="#" class="qa-item staff">
+                                        <div class="qa-icon">⚙️</div>
+                                        <span class="qa-text">Manage Bookings</span>
+                                    </a>
+                                    <a href="#" class="qa-item staff">
+                                        <div class="qa-icon">📊</div>
+                                        <span class="qa-text">Reports</span>
+                                    </a>
+                                    <a href="#" class="qa-item staff">
+                                        <div class="qa-icon">🗓️</div>
+                                        <span class="qa-text">Schedules</span>
+                                    </a>
+                            <% } else { %>
+                                <a href="#" class="qa-item">
+                                    <div class="qa-icon">💬</div>
+                                    <span class="qa-text">Student Forum</span>
+                                </a>
+                                <a href="#" class="qa-item">
+                                    <div class="qa-icon">📅</div>
+                                    <span class="qa-text">Room Booking</span>
+                                </a>
+                                <a href="#" class="qa-item">
+                                    <div class="qa-icon">🎓</div>
+                                    <span class="qa-text">My Grades</span>
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+
+                        <!-- Notifications Panel -->
+                        <div class="dash-card">
+                            <h2 class="dash-card-header">Notifications</h2>
+                            <ul class="notif-list">
+                                <li class="notif-item">
+                                    <div class="notif-icon-wrap">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div class="notif-content">
+                                        <h4>Forum Reply</h4>
+                                        <p>Prof. Smith replied to your thread.</p>
+                                        <div class="notif-time">2 hours ago</div>
+                                    </div>
+                                </li>
+                                <li class="notif-item success">
+                                    <div class="notif-icon-wrap">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="notif-content">
+                                        <h4>Booking Confirmed</h4>
+                                        <p>Study Room B booked for tomorrow 2 PM.</p>
+                                        <div class="notif-time">Yesterday</div>
+                                    </div>
+                                </li>
+                                <li class="notif-item warning">
+                                    <div class="notif-icon-wrap">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="notif-content">
+                                        <h4>System Update</h4>
+                                        <p>Portal maintenance scheduled for Sunday.</p>
+                                        <div class="notif-time">3 days ago</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Portal Modules / Marketplace -->
+                        <div class="dash-card">
+                            <h2 class="dash-card-header">Portal Modules</h2>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div class="module-item">
+                                    <div>
+                                        <h4>Academic Records</h4>
+                                        <p>View transcripts and grades</p>
+                                    </div>
+                                    <button class="btn-module">Open</button>
+                                </div>
+                                <% if (typeof profile !== 'undefined' && profile.role === 'Student' || typeof userProfile !== 'undefined' && userProfile.role === 'Student') { %>
+                                <div class="module-item">
+                                    <div>
+                                        <h4>Financial Hub</h4>
+                                        <p>Tuition and fee payments</p>
+                                    </div>
+                                    <a href="/financial" class="btn-module" style="text-decoration: none; display: inline-block;">Open</a>
+                                </div>
+                                <% } %>
+                                <div class="module-item">
+                                    <div>
+                                        <h4>Course Registration</h4>
+                                        <p>Enroll for next semester</p>
+                                    </div>
+                                    <button class="btn-module">Open</button>
+                                </div>
+                            </div>
+                        </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <script nonce="random123">
+            function toggleRecoveryKey() {
+                const keyText = document.getElementById('recovery-key-text');
+                const btn = document.getElementById('toggle-key-btn');
+                const realKey = btn.dataset.key; // Safely reads the database key from the data attribute
+                const maskedKey = "CP-**********";
+
+                if (keyText.innerText === maskedKey) {
+                    keyText.innerText = realKey;
+                    btn.innerText = "Hide Key";
+                } else {
+                    keyText.innerText = maskedKey;
+                    btn.innerText = "Reveal Key";
+                }
+            }
+        </script>
+>>>>>>> origin/main
 </body>
 </html>

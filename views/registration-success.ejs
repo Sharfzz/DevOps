@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Success - Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .key-box {
+            background-color: #fef3c7;
+            border: 1px solid #fbbf24;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #92400e;
+            letter-spacing: 2px;
+        }
+
+        .warning-text {
+            color: #dc2626;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Registration Successful!</h1>
+                    <p>Your account has been created.</p>
+                </div>
+
+                <div class="key-box">
+                    <%= key %>
+                </div>
+
+                <p class="warning-text">
+                    ⚠️ Save this Recovery Key! You will need it if you ever forget your password. We cannot recover it
+                    for you.
+                </p>
+
+                <a href="/login" class="btn-submit"
+                    style="display: block; text-align: center; text-decoration: none;">Proceed to Login</a>
+            </div>
+        </div>
+</body>
+
+</html>
