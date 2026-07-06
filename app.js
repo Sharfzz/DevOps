@@ -6,6 +6,7 @@ const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 require('dotenv').config();
 console.log('Debug - MONGO_URI exists:', !!process.env.MONGO_URI);
+const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
 
@@ -15,9 +16,9 @@ mongoose.connect(process.env.MONGO_URI, { family: 4 })
 const PORT = 8080;
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/campus_portal')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// mongoose.connect('mongodb://localhost:27017/campus_portal')
+//   .then(() => console.log('Connected to MongoDB'))
+//   .catch(err => console.error('MongoDB connection error:', err));
 
 // Tell Express to use EJS as the templating engine
 app.set('view engine', 'ejs');
