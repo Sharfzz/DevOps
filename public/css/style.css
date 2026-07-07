@@ -1,5 +1,4 @@
 :root {
-<<<<<<< HEAD
   --bg-primary: #f3f4f6;
   --bg-card: #ffffff;
   --text-main: #111827;
@@ -1194,25 +1193,6 @@ html.dark-theme .form-select {
     align-items: flex-start;
   }
 }
-=======
-    /* Clean Background */
-    --bg-primary: #f3f4f6;
-    --bg-card: #ffffff;
-    
-    /* Text Colors */
-    --text-main: #111827;
-    --text-muted: #6b7280;
-    
-    /* Navbar Variables */
-    --nav-bg: rgba(255, 255, 255, 0.9);
-    --nav-border: #E5E7EB;
-    
-    /* Interaction Colors */
-    --border-color: #d1d5db;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --input-focus-ring: rgba(59, 130, 246, 0.5);
-}
 
 * {
     margin: 0;
@@ -1529,4 +1509,4 @@ body {
         font-size: 2.5rem;
     }
 }
->>>>>>> origin/main
+

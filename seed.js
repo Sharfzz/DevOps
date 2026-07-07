@@ -72,16 +72,12 @@ const seedData = baseUsers.map((user, index) => {
         address: fakeAddresses[index],
         dob: fakeDobs[index],
         sex: index % 2 === 0 ? "Female" : "Male",
-<<<<<<< HEAD
-        nationality: fakeNationalities[index]
-=======
         nationality: fakeNationalities[index],
         financials: {
             outstandingBalance: user.role === 'Student' ? 1450.00 : 0.00,
             dueDate: user.role === 'Student' ? "15 Aug 2026" : "N/A",
             paymentMethods: []
         }
->>>>>>> origin/main
     };
 });
 

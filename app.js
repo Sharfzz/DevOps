@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-=======
-// TESTING GIT BRANCH SWITCHING
->>>>>>> origin/main
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const dns = require('node:dns');
 dns.setServers(['8.8.8.8', '1.1.1.1']);
-<<<<<<< HEAD
 
 require('dotenv').config();
 
@@ -19,19 +14,6 @@ const Question = require('./models/Question');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-=======
-require('dotenv').config();
-console.log('Debug - MONGO_URI exists:', !!process.env.MONGO_URI);
-const express = require('express');
-const mongoose = require('mongoose');
-const User = require('./models/User');
-const app = express();
-
-mongoose.connect(process.env.MONGO_URI, { family: 4 })
-    .then(() => console.log(' MongoDB Connected Successfully to CampusPortal!'))
-    .catch(err => console.error(' MongoDB Connection Error:', err));
-const PORT = 8080;
->>>>>>> origin/main
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -42,8 +24,16 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(session({
+  secret: process.env.SESSIONSECRET || 'campus-portal-secret',
+  resave: false,
+  saveUninitialized: false
+}));
 
-<<<<<<< HEAD
+
 const academicModules = {
   "School of Infocomm": [
     "OS",
@@ -171,12 +161,13 @@ app.use(async (req, res, next) => {
     } else {
       res.locals.themePreference = 'light';
     }
-  } catch (e) {
+    } catch (e) {
     res.locals.themePreference = req.session.user?.themePreference || 'light';
   }
 
   next();
-=======
+});
+
 // Serve static files from the public directory
 app.use(express.static('public'));
 
@@ -518,7 +509,7 @@ app.post('/financial/remove-card', async (req, res) => {
     });
 
     res.redirect('/financial');
->>>>>>> origin/main
+
 });
 
 app.get('/', requireLogin, async (req, res) => {
