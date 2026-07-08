@@ -524,21 +524,31 @@ app.get('/', requireLogin, async (req, res) => {
 
 app.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/');
-  res.render('login', { resetSuccess: req.query.reset || '', error: '' });
+  res.render('login', { error: '', resetSuccess: req.query.reset || '', campusId: '' });
 });
 
 app.post('/login', async (req, res) => {
   try {
     const { campusId, password } = req.body;
-    const user = await User.findOne({ campusId: normalizeId(campusId) });
+    const cleanId = normalizeId(campusId);
 
-    if (!user || !user.password) {
-      return res.status(400).render('login', { error: 'Invalid campus ID or password', resetSuccess: '' });
+    const user = await User.findOne({ campusId: cleanId });
+
+    if (!user) {
+      return res.status(401).render('login', {
+        error: 'User not registered.',
+        resetSuccess: '',
+        campusId
+      });
     }
 
-    const ok = await bcrypt.compare(password, user.password);
+    const ok = await bcrypt.compare(password, user.password || '');
     if (!ok) {
-      return res.status(400).render('login', { error: 'Invalid campus ID or password', resetSuccess: '' });
+      return res.status(401).render('login', {
+        error: 'Wrong password.',
+        resetSuccess: '',
+        campusId
+      });
     }
 
     req.session.user = {
@@ -553,67 +563,6 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).send('Internal Server Error');
-  }
-});
-
-app.get('/register', (req, res) => {
-  if (req.session.user) return res.redirect('/');
-  res.render('register', {
-    error: '',
-    fullName: '',
-    campusId: '',
-    role: '',
-    securityQuestion: '',
-    securityAnswer: ''
-  });
-});
-
-app.post('/register', async (req, res) => {
-  try {
-    const { fullName, campusId, password, confirmPassword, securityQuestion, securityAnswer, role } = req.body;
-    const cleanId = normalizeId(campusId);
-    const cleanName = (fullName || '').trim();
-
-    if (password !== confirmPassword) {
-      return res.render('register', { error: 'Passwords do not match.', fullName, campusId, role, securityQuestion, securityAnswer });
-    }
-
-    if (role === 'Student' && cleanId.startsWith('E')) {
-      return res.render('register', { error: 'Role mismatch: E IDs are reserved for Staff.', fullName, campusId, role, securityQuestion, securityAnswer });
-    }
-
-    if (role === 'Admin' && cleanId.startsWith('S')) {
-      return res.render('register', { error: 'Role mismatch: S IDs are reserved for Students.', fullName, campusId, role, securityQuestion, securityAnswer });
-    }
-
-    const alreadyActive = await User.findOne({ campusId: cleanId, isRegistered: true });
-    if (alreadyActive) {
-      return res.render('register', { error: 'This Campus ID has already been registered and activated.', fullName, campusId, role, securityQuestion, securityAnswer });
-    }
-
-    const whitelistUser = await User.findOne({
-      campusId: cleanId,
-      fullName: cleanName,
-      role,
-      isRegistered: false
-    });
-
-    if (!whitelistUser) {
-      return res.render('register', { error: 'Identity verification failed. Your ID and name do not match our campus directory enrollment logs.', fullName, campusId, role, securityQuestion, securityAnswer });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    whitelistUser.password = await bcrypt.hash(password, salt);
-    whitelistUser.securityQuestion = securityQuestion;
-    whitelistUser.securityAnswer = securityAnswer;
-    whitelistUser.recoveryKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-    whitelistUser.isRegistered = true;
-
-    await whitelistUser.save();
-    res.redirect('/login');
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).send('Server Error during registration');
   }
 });
 

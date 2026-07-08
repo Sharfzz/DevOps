@@ -37,9 +37,13 @@
       </div>
     <% } %>
 
-    <section class="forum-hero">
-      <h1>Student Help Forum</h1>
-      <p>Ask questions, share knowledge, and help classmates succeed.</p>
+    <section class="forum-hero <%= isAdmin ? 'admin-hero' : '' %>">
+      <h1><%= isAdmin ? 'Admin Forum Dashboard' : 'Student Help Forum' %></h1>
+      <p>
+        <%= isAdmin
+          ? 'Review questions, manage replies, and keep the forum organized.'
+          : 'Ask questions, share knowledge, and help classmates succeed.' %>
+      </p>
     </section>
 
     <section class="stats-grid">
@@ -48,62 +52,75 @@
       <div class="stat-card"><span class="stat-label">Total Modules</span><h3><%= totalModules %></h3></div>
     </section>
 
-    <section class="ask-card">
-      <h2>Ask a Question</h2>
-      <form action="/forum" method="POST">
-        <div class="form-group">
-          <label for="category" class="form-label">Category</label>
-          <select name="category" id="category" class="form-select" required>
-            <option value="">Select a category</option>
-            <option value="Academic Modules">Academic Modules</option>
-            <option value="General Enquiries">General Enquiries</option>
-          </select>
-        </div>
-
-        <div class="forum-switch-block" id="academicBlock" style="display:none;">
+    <% if (!isAdmin) { %>
+      <section class="ask-card">
+        <h2>Ask a Question</h2>
+        <form action="/forum" method="POST">
           <div class="form-group">
-            <label for="school" class="form-label">School</label>
-            <select name="school" id="school" class="form-select">
-              <option value="">Select a school</option>
-              <% Object.keys(academicModules).forEach((school) => { %>
-                <option value="<%= school %>"><%= school %></option>
-              <% }) %>
+            <label for="category" class="form-label">Category</label>
+            <select name="category" id="category" class="form-select" required>
+              <option value="">Select a category</option>
+              <option value="Academic Modules">Academic Modules</option>
+              <option value="General Enquiries">General Enquiries</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="module" class="form-label">Module</label>
-            <select name="module" id="module" class="form-select">
-              <option value="">Select a module</option>
-            </select>
+          <div class="forum-switch-block" id="academicBlock" style="display:none;">
+            <div class="form-group">
+              <label for="school" class="form-label">School</label>
+              <select name="school" id="school" class="form-select">
+                <option value="">Select a school</option>
+                <% Object.keys(academicModules).forEach((school) => { %>
+                  <option value="<%= school %>"><%= school %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="module" class="form-label">Module</label>
+              <select name="module" id="module" class="form-select">
+                <option value="">Select a module</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div class="forum-switch-block" id="generalBlock" style="display:none;">
-          <div class="form-group">
-            <label for="enquiryTopic" class="form-label">General Enquiry Topic</label>
-            <select name="enquiryTopic" id="enquiryTopic" class="form-select">
-              <option value="">Select a topic</option>
-              <% generalTopics.forEach((topic) => { %>
-                <option value="<%= topic %>"><%= topic %></option>
-              <% }) %>
-            </select>
+          <div class="forum-switch-block" id="generalBlock" style="display:none;">
+            <div class="form-group">
+              <label for="enquiryTopic" class="form-label">General Enquiry Topic</label>
+              <select name="enquiryTopic" id="enquiryTopic" class="form-select">
+                <option value="">Select a topic</option>
+                <% generalTopics.forEach((topic) => { %>
+                  <option value="<%= topic %>"><%= topic %></option>
+                <% }) %>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label for="title" class="form-label">Question Title</label>
-          <input type="text" id="title" name="title" class="form-input" required>
-        </div>
+          <div class="form-group">
+            <label for="title" class="form-label">Question Title</label>
+            <input type="text" id="title" name="title" class="form-input" required>
+          </div>
 
-        <div class="form-group">
-          <label for="description" class="form-label">Description</label>
-          <textarea rows="5" id="description" name="description" class="form-input" required></textarea>
-        </div>
+          <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <textarea rows="5" id="description" name="description" class="form-input" required></textarea>
+          </div>
 
-        <button type="submit" class="btn-submit">Post Question</button>
-      </form>
-    </section>
+          <button type="submit" class="btn-submit">Post Question</button>
+        </form>
+      </section>
+    <% } else { %>
+      <section class="admin-panel">
+        <div class="admin-panel__top">
+          <h2 class="admin-panel__title">Administrator Tools</h2>
+          <span class="admin-mode-badge">Admin Mode</span>
+        </div>
+        <p class="admin-panel__text">
+          Review questions, manage replies, and keep the forum organized.
+          Posting new questions is disabled for admin accounts.
+        </p>
+      </section>
+    <% } %>
 
     <section class="search-card">
       <h2>Search Questions</h2>
@@ -124,7 +141,7 @@
         <% questions.forEach((question) => { %>
           <article
             id="q-<%= question._id %>"
-            class="question-card searchable-question"
+            class="question-card searchable-question <%= isAdmin ? 'admin-question-card' : '' %>"
             data-category="<%= question.category.toLowerCase() %>"
             data-school="<%= (question.school || '').toLowerCase() %>"
             data-module="<%= (question.module || question.enquiryTopic || '').toLowerCase() %>"
@@ -237,13 +254,15 @@
   </div>
 
   <script>
-  const academicModules = JSON.parse('<%- JSON.stringify(academicModules) %>');    const category = document.getElementById('category');
+    const academicModules = JSON.parse('<%- JSON.stringify(academicModules) %>');
+    const category = document.getElementById('category');
     const school = document.getElementById('school');
     const moduleSelect = document.getElementById('module');
     const academicBlock = document.getElementById('academicBlock');
     const generalBlock = document.getElementById('generalBlock');
 
     function loadModulesForSchool(selectedSchool) {
+      if (!moduleSelect) return;
       moduleSelect.innerHTML = '<option value="">Select a module</option>';
       if (!selectedSchool || !academicModules[selectedSchool]) return;
       academicModules[selectedSchool].forEach((m) => {
@@ -254,41 +273,48 @@
       });
     }
 
-    category.addEventListener('change', () => {
-      const val = category.value;
-      academicBlock.style.display = val === 'Academic Modules' ? 'block' : 'none';
-      generalBlock.style.display = val === 'General Enquiries' ? 'block' : 'none';
-      school.required = val === 'Academic Modules';
-      moduleSelect.required = val === 'Academic Modules';
-      document.getElementById('enquiryTopic').required = val === 'General Enquiries';
-    });
+    if (category) {
+      category.addEventListener('change', () => {
+        const val = category.value;
+        if (academicBlock) academicBlock.style.display = val === 'Academic Modules' ? 'block' : 'none';
+        if (generalBlock) generalBlock.style.display = val === 'General Enquiries' ? 'block' : 'none';
+        if (school) school.required = val === 'Academic Modules';
+        if (moduleSelect) moduleSelect.required = val === 'Academic Modules';
+        const enquiryTopic = document.getElementById('enquiryTopic');
+        if (enquiryTopic) enquiryTopic.required = val === 'General Enquiries';
+      });
+    }
 
-    school.addEventListener('change', () => loadModulesForSchool(school.value));
+    if (school) {
+      school.addEventListener('change', () => loadModulesForSchool(school.value));
+    }
 
     const searchInput = document.getElementById('searchInput');
     const questionCards = document.querySelectorAll('.searchable-question');
     const resultCount = document.getElementById('resultCount');
     const noSearchResults = document.getElementById('noSearchResults');
 
-    searchInput.addEventListener('input', () => {
-      const searchValue = searchInput.value.toLowerCase().trim();
-      let visibleCount = 0;
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const searchValue = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
 
-      questionCards.forEach(card => {
-        const matches =
-          card.dataset.category.includes(searchValue) ||
-          card.dataset.school.includes(searchValue) ||
-          card.dataset.module.includes(searchValue) ||
-          card.dataset.title.includes(searchValue) ||
-          card.dataset.description.includes(searchValue);
+        questionCards.forEach(card => {
+          const matches =
+            card.dataset.category.includes(searchValue) ||
+            card.dataset.school.includes(searchValue) ||
+            card.dataset.module.includes(searchValue) ||
+            card.dataset.title.includes(searchValue) ||
+            card.dataset.description.includes(searchValue);
 
-        card.style.display = matches ? 'block' : 'none';
-        if (matches) visibleCount++;
+          card.style.display = matches ? 'block' : 'none';
+          if (matches) visibleCount++;
+        });
+
+        if (resultCount) resultCount.textContent = `${visibleCount} question(s)`;
+        if (noSearchResults) noSearchResults.style.display = visibleCount === 0 ? 'block' : 'none';
       });
-
-      resultCount.textContent = `${visibleCount} question(s)`;
-      noSearchResults.style.display = visibleCount === 0 ? 'block' : 'none';
-    });
+    }
 
     const notification = document.getElementById('successNotification');
     if (notification) {
