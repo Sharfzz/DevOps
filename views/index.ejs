@@ -86,6 +86,10 @@
                       <div class="qa-icon">💬</div>
                       <span class="qa-text">Student Forum</span>
                     </a>
+                    <a href="/room-booking" class="qa-item">
+                        <div class="qa-icon">📅</div>
+                        <span class="qa-text">Room Booking</span>
+                    </a>
                     <a href="/profile" class="qa-item">
                       <div class="qa-icon">👤</div>
                       <span class="qa-text">Profile</span>
@@ -147,14 +151,6 @@
             <div class="dash-card">
               <h2 class="dash-card-header">Portal Modules</h2>
               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <div class="module-item">
-                  <div>
-                    <h4>Academic Records</h4>
-                    <p>View transcripts and grades</p>
-                  </div>
-                  <button class="btn-module">Open</button>
-                </div>
-
                 <% if (role==='Student' ) { %>
                   <div class="module-item">
                     <div>
@@ -164,15 +160,23 @@
                     <a href="/financial" class="btn-module"
                       style="text-decoration: none; display: inline-block;">Open</a>
                   </div>
-                  <% } %>
-
-                    <div class="module-item">
-                      <div>
-                        <h4>Course Registration</h4>
-                        <p>Enroll for next semester</p>
-                      </div>
-                      <button class="btn-module">Open</button>
+                  <div class="module-item">
+                    <div>
+                      <h4>Student Forum</h4>
+                      <p>Join campus discussions and announcements</p>
                     </div>
+                    <a href="/forum" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <div class="module-item">
+                    <div>
+                      <h4>Room Booking</h4>
+                      <p>Reserve study spaces and meeting rooms</p>
+                    </div>
+                    <a href="#" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <% } %>
 
                     <% if (isStaff) { %>
                       <div class="module-item">
@@ -181,6 +185,14 @@
                           <p>Manage manual password resets</p>
                         </div>
                         <a href="/admin/helpdesk" class="btn-module"
+                          style="text-decoration: none; display: inline-block;">Open</a>
+                      </div>
+                      <div class="module-item">
+                        <div>
+                          <h4>Staff Forum</h4>
+                          <p>Access and manage campus-wide discussions</p>
+                        </div>
+                        <a href="/forum" class="btn-module"
                           style="text-decoration: none; display: inline-block;">Open</a>
                       </div>
                       <% } %>

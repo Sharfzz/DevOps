@@ -23,27 +23,39 @@
 
         <div class="dash-card">
             <h2 class="dash-card-header">Registered Users</h2>
+            
+            <% if (typeof generatedPin !== 'undefined' && generatedPin) { %>
+                <div style="background-color: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+                    Success! Temporary PIN for <%= generatedPinUser %> is: <strong style="font-size: 1.1em; letter-spacing: 1px;"><%= generatedPin %></strong>. Instruct the student to log in with this PIN immediately.
+                </div>
+            <% } %>
+
+            <input type="text" id="searchInput" placeholder="Search by Name or ID..." style="width: 100%; max-width: 400px; padding: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 6px;">
 
             <% if (!users || users.length === 0) { %>
                 <p class="no-data">No users found.</p>
             <% } else { %>
                 <div class="table-wrap">
-                    <table class="admin-table">
+                    <table class="admin-table" id="usersTable">
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Campus ID</th>
                                 <th>Role</th>
                                 <th>Registered</th>
-                                <th>Recovery Key</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% users.forEach(user => { %>
-                                <tr>
-                                    <td><%= user.fullName %></td>
-                                    <td><%= user.campusId %></td>
+                                <tr class="<%= user.manualResetRequested ? 'highlight-row' : '' %>">
+                                    <td class="user-name">
+                                        <%= user.fullName %>
+                                        <% if (user.manualResetRequested === true) { %>
+                                            <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="user-id"><%= user.campusId %></td>
                                     <td>
                                         <span class="role-badge <%= user.role === 'Admin' ? 'staff' : '' %>">
                                             <%= user.role %>
@@ -52,16 +64,21 @@
                                     <td>
                                         <%= user.isRegistered ? 'Yes' : 'No' %>
                                     </td>
-                                    <td class="mono-cell">
-                                        <%= user.recoveryKey || 'N/A' %>
-                                    </td>
                                     <td>
-                                        <form action="/admin/reset-user" method="POST" style="margin:0;">
-                                            <input type="hidden" name="targetUserId" value="<%= user._id %>">
-                                            <button type="submit" class="btn-regenerate" style="width:auto; padding:0.7rem 1rem;">
-                                                Reset User
-                                            </button>
-                                        </form>
+                                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; height: 100%;">
+                                            <% if (user.manualResetRequested === true) { %>
+                                                <form action="/admin/approve-reset" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                    <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                    <button type="submit" class="btn-approve-reset" style="background-color: #ef4444; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">Approve Reset</button>
+                                                </form>
+                                            <% } %>
+                                            <form action="/admin/reset-user" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                <button type="submit" class="btn-regenerate" style="background-color: #0f172a; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">
+                                                    Admin Reset
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -75,6 +92,40 @@
     <style>
         .table-wrap {
             overflow-x: auto;
+        }
+
+        .btn-approve-reset {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+        .btn-approve-reset:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-regenerate {
+            background-color: #0f172a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+        .btn-regenerate:hover {
+            background-color: #1e293b;
         }
 
         .admin-table {
@@ -112,124 +163,29 @@
             color: #64748b;
             padding: 16px 0;
         }
-    </style>
-</body>
-</html>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-        .styled-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9em;
-            font-family: 'Inter', sans-serif;
-            min-width: 400px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .styled-table thead tr {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
-            text-align: left;
-        }
-        .styled-table th,
-        .styled-table td {
-            padding: 12px 15px;
-        }
-        .styled-table tbody tr {
-            border-bottom: 1px solid #dddddd;
-            background-color: #ffffff;
-        }
-        .styled-table tbody tr:nth-of-type(even) {
-            background-color: #f9f9f9;
-        }
-        .styled-table tbody tr:last-of-type {
-            border-bottom: 2px solid #667eea;
-        }
-        .btn-small {
-            background: #e53e3e;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-        .btn-small:hover {
-            background: #c53030;
+
+        .highlight-row {
+            background-color: #fffaf0;
+            border-left: 4px solid #dd6b20;
         }
     </style>
-</head>
 
-<body>
-    <%- include('partials/navbar') %>
+    <script>
+        document.getElementById('searchInput')?.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
 
-    <div style="padding: 40px 20px; max-width: 1000px; margin: 0 auto;">
-        <h1 style="color: #2d3748; margin-bottom: 10px;">Admin Helpdesk</h1>
-        <p style="color: #718096;">Manage users and perform administrative resets.</p>
+            rows.forEach(row => {
+                const name = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
+                const id = row.querySelector('.user-id')?.textContent.toLowerCase() || '';
 
-        <% if (typeof generatedPin !== 'undefined' && generatedPin) { %>
-            <div style="background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                <h3 style="color: #2b6cb0; margin-top: 0;">Reset Approved</h3>
-                <p>Temporary PIN for <strong><%= generatedPinUser %></strong>: <strong style="font-size: 1.2em; font-family: monospace; letter-spacing: 2px;"><%= generatedPin %></strong></p>
-                <p style="margin-bottom: 0; font-size: 0.9em; color: #4a5568;">Please provide this PIN to the student. They will be forced to update their password upon login.</p>
-            </div>
-        <% } %>
-
-        <div class="table-container">
-            <table class="styled-table">
-                <thead>
-                    <tr>
-                        <th>Full Name</th>
-                        <th>Student/Staff ID</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (users && users.length > 0) { %>
-                        <% users.forEach(u => { %>
-                            <tr style="<%= u.manualResetRequested ? 'background-color: #fffaf0; border-left: 4px solid #dd6b20;' : '' %>">
-                                <td>
-                                    <%= u.fullName %>
-                                    <% if (u.manualResetRequested) { %>
-                                        <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
-                                    <% } %>
-                                </td>
-                                <td><%= u.campusId %></td>
-                                <td><%= u.role %></td>
-                                <td>
-                                    <div style="display: flex; gap: 8px;">
-                                        <% if (u.manualResetRequested) { %>
-                                            <form action="/admin/approve-reset" method="POST" style="margin: 0;" onsubmit="return confirm('Approve reset and generate temporary PIN for <%= u.fullName %>?');">
-                                                <input type="hidden" name="targetUserId" value="<%= u._id %>">
-                                                <button type="submit" class="btn-small" style="background: #319795;">Approve Reset</button>
-                                            </form>
-                                        <% } %>
-                                        <form action="/admin/reset-user" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset the password and recovery key for <%= u.fullName %>?');">
-                                            <input type="hidden" name="targetUserId" value="<%= u._id %>">
-                                            <button type="submit" class="btn-small">Admin Reset</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="4" style="text-align: center;">No users found.</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-    </div>
+                if (name.includes(filter) || id.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
-
 </html>

@@ -24,14 +24,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(session({
-  secret: process.env.SESSIONSECRET || 'campus-portal-secret',
-  resave: false,
-  saveUninitialized: false
-}));
+
 
 
 const academicModules = {
@@ -168,82 +161,11 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Serve static files from the public directory
-app.use(express.static('public'));
 
-// Middleware to parse URL-encoded bodies (form data)
-app.use(express.urlencoded({ extended: true }));
 
-// Setup Session Middleware
-app.use(session({
-    secret: 'campus-portal-secret',
-    resave: false,
-    saveUninitialized: true
-}));
 
-app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
-    next();
-});
 
-// Auth routes
-app.get('/', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-    try {
-        const user = await User.findById(req.session.user.id);
-        res.render('index', { profile: user });
-    } catch (err) {
-        console.error('Dashboard Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-app.get('/login', (req, res) => {
-    res.render('login');
-});
-
-app.post('/login', async (req, res) => {
-    try {
-        const { campusId, password } = req.body;
-
-        if (typeof campusId !== 'string' || typeof password !== 'string') {
-            return res.status(400).send('Invalid input format');
-        }
-
-        const user = await User.findOne({ campusId });
-
-        if (!user) {
-            return res.status(401).send('Invalid Credentials');
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).send('Invalid Credentials');
-        }
-
-        if (user.mustChangePassword) {
-            req.session.forceUpdateUserId = user._id;
-            return res.redirect('/force-password-update');
-        }
-
-        req.session.user = {
-            id: user._id,
-            role: user.role,
-            fullName: user.fullName,
-            campusId: user.campusId,
-            securityQuestion: user.securityQuestion,
-            recoveryKey: user.recoveryKey
-        };
-
-        res.redirect('/');
-    } catch (err) {
-        console.error('Login Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
+// === REGISTRATION ROUTES ===
 app.get('/register', (req, res) => {
     res.render('register', { error: null, fullName: '', campusId: '', role: '', securityQuestion: '', securityAnswer: '' });
 });
@@ -258,10 +180,12 @@ app.get('/logout', (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
+        // Extract registration fields from request body
         const { fullName, campusId, password, securityQuestion, securityAnswer, role } = req.body;
         const cleanId = campusId.trim();
         const cleanName = fullName.trim();
 
+        // Validate role prefix matches ID pattern (Staff starts with E, Students start with S)
         if (role === 'Student' && cleanId.startsWith('E')) {
             return res.render('register', {
                 error: "Role mismatch: 'E' IDs are reserved for Staff.",
@@ -338,88 +262,34 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.get('/forgot-password', (req, res) => {
-    res.render('forgot-password');
-});
-
-app.post('/forgot-password', async (req, res) => {
-    try {
-        const { campusId, recoveryMethod, recoveryKey, securityAnswer } = req.body;
-        let user;
-
-        if (recoveryMethod === 'key') {
-            user = await User.findOne({ campusId, recoveryKey });
-        } else if (recoveryMethod === 'question') {
-            user = await User.findOne({ campusId, securityAnswer });
-        } else {
-            user = await User.findOne({ campusId, $or: [{ recoveryKey: recoveryKey || '' }, { securityAnswer: securityAnswer || '' }] });
-        }
-
-        if (user) {
-            req.session.resetUserId = user._id;
-            res.redirect('/reset-password');
-        } else {
-            res.status(401).send('Invalid ID or Recovery Information.');
-        }
-    } catch (err) {
-        console.error('Forgot Password Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
+// === PASSWORD RESET FLOWS ===
 
 app.post('/request-it-reset', async (req, res) => {
     try {
         const { campusId } = req.body;
         if (!campusId) {
-            return res.render('forgot-password', { error: 'Campus ID is required to request an IT reset.' });
+            return res.render('forgot-password', { error: 'Campus ID is required to request an IT reset.', message: null });
         }
-        const user = await User.findOne({ campusId });
+        
+        // Normalize the ID (trim and uppercase) to match the database exactly
+        const cleanId = campusId.trim().toUpperCase();
+        const user = await User.findOne({ campusId: cleanId });
+        
         if (!user) {
-            return res.render('forgot-password', { error: 'Invalid Campus ID.' });
+            return res.render('forgot-password', { error: 'Invalid Campus ID.', message: null });
         }
+        
         user.manualResetRequested = true;
         await user.save();
-        res.render('forgot-password', { message: 'Reset requested. Please proceed to the IT counter.' });
+        
+        res.render('forgot-password', { message: 'Request sent to IT Support', error: null });
     } catch (err) {
         console.error('Request IT Reset Error:', err);
-        res.render('forgot-password', { error: 'Internal Server Error' });
+        res.render('forgot-password', { error: 'Internal Server Error', message: null });
     }
 });
 
-app.get('/reset-password', (req, res) => {
-    if (!req.session.resetUserId) {
-        return res.redirect('/login');
-    }
-    res.render('reset-password');
-});
 
-app.post('/reset-password', async (req, res) => {
-    try {
-        if (!req.session.resetUserId) {
-            return res.redirect('/login');
-        }
-
-        const { newPassword, confirmPassword } = req.body;
-        if (newPassword !== confirmPassword) {
-            return res.status(400).send('Passwords do not match');
-        }
-
-        const user = await User.findById(req.session.resetUserId);
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPassword;
-        await user.save();
-
-        req.session.resetUserId = null;
-        res.redirect('/login');
-    } catch (err) {
-        console.error('Reset Password Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
 
 app.get('/force-password-update', (req, res) => {
     if (!req.session.forceUpdateUserId) {
@@ -455,44 +325,17 @@ app.post('/force-password-update', async (req, res) => {
     }
 });
 
-app.get('/profile', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-    try {
-        const user = await User.findById(req.session.user.id);
-        if (!user) {
-            req.session.destroy();
-            return res.redirect('/login');
-        }
-        res.render('profile', { userProfile: user });
-    } catch (err) {
-        console.error('Profile Fetch Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
+// === PROFILE ROUTES ===
 
-app.post('/profile/regenerate-key', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-    try {
-        const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-        await User.findByIdAndUpdate(req.session.user.id, { recoveryKey: newKey });
-        res.redirect('/profile');
-    } catch (err) {
-        console.error('Regenerate Key Error:', err);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
+// === ADMIN HELPDESK ROUTES ===
+// Display the admin helpdesk page showing all users
 app.get('/admin/helpdesk', async (req, res) => {
     const authorizedRoles = ['Admin', 'Staff'];
     if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
         return res.status(403).send('Forbidden: Authorized Personnel Only');
     }
     try {
-        const users = await User.find({});
+        const users = await User.find({}).sort({ manualResetRequested: -1, createdAt: -1 });
         const generatedPin = req.session.generatedPin;
         const generatedPinUser = req.session.generatedPinUser;
         req.session.generatedPin = null;
@@ -539,9 +382,8 @@ app.post('/admin/approve-reset', async (req, res) => {
         if (!user) return res.status(404).send('User not found');
 
         const pin = Math.floor(100000 + Math.random() * 900000).toString();
-        const hashedPin = await bcrypt.hash(pin, 10);
         
-        user.password = hashedPin;
+        user.temporaryPin = pin;
         user.manualResetRequested = false;
         user.mustChangePassword = true;
         await user.save();
@@ -555,6 +397,8 @@ app.post('/admin/approve-reset', async (req, res) => {
     }
 });
 
+// === FINANCIAL HUB ROUTES ===
+// Display the financial hub for students
 app.get('/financial', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     if (req.session.user.role !== 'Student') return res.redirect('/');
@@ -633,6 +477,11 @@ app.post('/login', async (req, res) => {
       });
     }
 
+    if (user.temporaryPin && password === user.temporaryPin) {
+        req.session.forceUpdateUserId = user._id;
+        return res.redirect('/force-password-update');
+    }
+
     const ok = await bcrypt.compare(password, user.password || '');
     if (!ok) {
       return res.status(401).render('login', {
@@ -692,7 +541,7 @@ app.post('/forgot-password', async (req, res) => {
       return res.redirect('/reset-password');
     }
 
-    res.status(401).send('Invalid ID or Recovery Information.');
+    res.status(401).render('forgot-password', { error: 'Invalid ID or Recovery Information.' });
   } catch (err) {
     console.error('Forgot Password Error:', err);
     res.status(500).send('Internal Server Error');
@@ -747,9 +596,25 @@ app.post('/profile/regenerate-key', requireLogin, async (req, res) => {
   try {
     const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
     await User.findByIdAndUpdate(req.session.user.id, { recoveryKey: newKey });
-    res.redirect('/profile');
+    res.redirect('/profile?tab=security');
   } catch (err) {
     console.error('Regenerate Key Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/profile/update-contact', requireLogin, async (req, res) => {
+  try {
+    const { contactHome, contactMobile, personalEmail, address } = req.body;
+    await User.findByIdAndUpdate(req.session.user.id, {
+      contactHome,
+      contactMobile,
+      personalEmail,
+      address
+    });
+    res.redirect('/profile?tab=contact');
+  } catch (err) {
+    console.error('Update Contact Error:', err);
     res.status(500).send('Internal Server Error');
   }
 });
@@ -766,35 +631,7 @@ app.post('/profile/theme', requireLogin, async (req, res) => {
   }
 });
 
-app.get('/admin/helpdesk', requireAdmin, async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.render('admin-helpdesk', { users });
-  } catch (err) {
-    console.error('Admin Fetch Users Error:', err);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
-app.post('/admin/reset-user', requireAdmin, async (req, res) => {
-  try {
-    const { targetUserId } = req.body;
-    const newPassword = 'Campus123!';
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-    const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
-
-    await User.findByIdAndUpdate(targetUserId, {
-      password: hashedPassword,
-      recoveryKey: newKey
-    });
-
-    res.redirect('/admin/helpdesk');
-  } catch (err) {
-    console.error('Admin Reset Error:', err);
-    res.status(500).send('Internal Server Error');
-  }
-});
 
 app.get('/forum', requireLogin, async (req, res) => {
   try {
