@@ -514,20 +514,7 @@
                                 </span>
                             </div>
 
-                            <div class="info-row" style="margin-top: 0.5rem;">
-                                <span class="info-label">Recovery Key</span>
-                                <div class="recovery-key-container">
-                                    <span class="key-text" id="recovery-key-text">CP-**********</span>
-                                    <button type="button" class="btn-view" id="toggle-key-btn"
-                                        data-key="<%= profile.recoveryKey %>" onclick="toggleRecoveryKey()">Reveal
-                                        Key</button>
-                                </div>
-                            </div>
                         </div>
-
-                        <form action="/profile/regenerate-key" method="POST">
-                            <button type="submit" class="btn-regenerate">Regenerate Key</button>
-                        </form>
                     </div>
                 </div>
 
@@ -648,6 +635,15 @@
                                     </div>
                                     <button class="btn-module">Open</button>
                                 </div>
+                                <% if (isStaff) { %>
+                                <div class="module-item">
+                                    <div>
+                                        <h4>IT Helpdesk</h4>
+                                        <p>Manage manual password resets</p>
+                                    </div>
+                                    <a href="/admin/helpdesk" class="btn-module" style="text-decoration: none; display: inline-block;">Open</a>
+                                </div>
+                                <% } %>
                             </div>
                         </div>
 

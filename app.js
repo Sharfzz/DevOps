@@ -74,6 +74,11 @@ app.post('/login', async (req, res) => {
             return res.status(401).send('Invalid Credentials');
         }
 
+        if (user.mustChangePassword) {
+            req.session.forceUpdateUserId = user._id;
+            return res.redirect('/force-password-update');
+        }
+
         req.session.user = {
             id: user._id,
             role: user.role,
@@ -213,6 +218,25 @@ app.post('/forgot-password', async (req, res) => {
     }
 });
 
+app.post('/request-it-reset', async (req, res) => {
+    try {
+        const { campusId } = req.body;
+        if (!campusId) {
+            return res.render('forgot-password', { error: 'Campus ID is required to request an IT reset.' });
+        }
+        const user = await User.findOne({ campusId });
+        if (!user) {
+            return res.render('forgot-password', { error: 'Invalid Campus ID.' });
+        }
+        user.manualResetRequested = true;
+        await user.save();
+        res.render('forgot-password', { message: 'Reset requested. Please proceed to the IT counter.' });
+    } catch (err) {
+        console.error('Request IT Reset Error:', err);
+        res.render('forgot-password', { error: 'Internal Server Error' });
+    }
+});
+
 app.get('/reset-password', (req, res) => {
     if (!req.session.resetUserId) {
         return res.redirect('/login');
@@ -244,6 +268,40 @@ app.post('/reset-password', async (req, res) => {
         res.redirect('/login');
     } catch (err) {
         console.error('Reset Password Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.get('/force-password-update', (req, res) => {
+    if (!req.session.forceUpdateUserId) {
+        return res.redirect('/login');
+    }
+    res.render('force-password-update');
+});
+
+app.post('/force-password-update', async (req, res) => {
+    try {
+        if (!req.session.forceUpdateUserId) {
+            return res.redirect('/login');
+        }
+        const { newPassword, confirmPassword } = req.body;
+        if (newPassword !== confirmPassword) {
+            return res.status(400).send('Passwords do not match');
+        }
+        const user = await User.findById(req.session.forceUpdateUserId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.mustChangePassword = false;
+        await user.save();
+
+        req.session.forceUpdateUserId = null;
+        res.redirect('/login');
+    } catch (err) {
+        console.error('Force Password Update Error:', err);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -280,12 +338,17 @@ app.post('/profile/regenerate-key', async (req, res) => {
 });
 
 app.get('/admin/helpdesk', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'Admin') {
-        return res.status(403).send('Forbidden: Admins Only');
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
     }
     try {
         const users = await User.find({});
-        res.render('admin-helpdesk', { users });
+        const generatedPin = req.session.generatedPin;
+        const generatedPinUser = req.session.generatedPinUser;
+        req.session.generatedPin = null;
+        req.session.generatedPinUser = null;
+        res.render('admin-helpdesk', { users, generatedPin, generatedPinUser });
     } catch (err) {
         console.error('Admin Fetch Users Error:', err);
         res.status(500).send('Internal Server Error');
@@ -293,8 +356,9 @@ app.get('/admin/helpdesk', async (req, res) => {
 });
 
 app.post('/admin/reset-user', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'Admin') {
-        return res.status(403).send('Forbidden: Admins Only');
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
     }
     try {
         const { targetUserId } = req.body;
@@ -311,6 +375,33 @@ app.post('/admin/reset-user', async (req, res) => {
         res.redirect('/admin/helpdesk');
     } catch (err) {
         console.error('Admin Reset Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/admin/approve-reset', async (req, res) => {
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
+    }
+    try {
+        const { targetUserId } = req.body;
+        const user = await User.findById(targetUserId);
+        if (!user) return res.status(404).send('User not found');
+
+        const pin = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedPin = await bcrypt.hash(pin, 10);
+        
+        user.password = hashedPin;
+        user.manualResetRequested = false;
+        user.mustChangePassword = true;
+        await user.save();
+
+        req.session.generatedPin = pin;
+        req.session.generatedPinUser = user.fullName;
+        res.redirect('/admin/helpdesk');
+    } catch (err) {
+        console.error('Approve Reset Error:', err);
         res.status(500).send('Internal Server Error');
     }
 });

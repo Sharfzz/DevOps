@@ -67,6 +67,14 @@
         <h1 style="color: #2d3748; margin-bottom: 10px;">Admin Helpdesk</h1>
         <p style="color: #718096;">Manage users and perform administrative resets.</p>
 
+        <% if (typeof generatedPin !== 'undefined' && generatedPin) { %>
+            <div style="background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                <h3 style="color: #2b6cb0; margin-top: 0;">Reset Approved</h3>
+                <p>Temporary PIN for <strong><%= generatedPinUser %></strong>: <strong style="font-size: 1.2em; font-family: monospace; letter-spacing: 2px;"><%= generatedPin %></strong></p>
+                <p style="margin-bottom: 0; font-size: 0.9em; color: #4a5568;">Please provide this PIN to the student. They will be forced to update their password upon login.</p>
+            </div>
+        <% } %>
+
         <div class="table-container">
             <table class="styled-table">
                 <thead>
@@ -80,15 +88,28 @@
                 <tbody>
                     <% if (users && users.length > 0) { %>
                         <% users.forEach(u => { %>
-                            <tr>
-                                <td><%= u.fullName %></td>
+                            <tr style="<%= u.manualResetRequested ? 'background-color: #fffaf0; border-left: 4px solid #dd6b20;' : '' %>">
+                                <td>
+                                    <%= u.fullName %>
+                                    <% if (u.manualResetRequested) { %>
+                                        <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
+                                    <% } %>
+                                </td>
                                 <td><%= u.campusId %></td>
                                 <td><%= u.role %></td>
                                 <td>
-                                    <form action="/admin/reset-user" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset the password and recovery key for <%= u.fullName %>?');">
-                                        <input type="hidden" name="targetUserId" value="<%= u._id %>">
-                                        <button type="submit" class="btn-small">Administrative Reset</button>
-                                    </form>
+                                    <div style="display: flex; gap: 8px;">
+                                        <% if (u.manualResetRequested) { %>
+                                            <form action="/admin/approve-reset" method="POST" style="margin: 0;" onsubmit="return confirm('Approve reset and generate temporary PIN for <%= u.fullName %>?');">
+                                                <input type="hidden" name="targetUserId" value="<%= u._id %>">
+                                                <button type="submit" class="btn-small" style="background: #319795;">Approve Reset</button>
+                                            </form>
+                                        <% } %>
+                                        <form action="/admin/reset-user" method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to reset the password and recovery key for <%= u.fullName %>?');">
+                                            <input type="hidden" name="targetUserId" value="<%= u._id %>">
+                                            <button type="submit" class="btn-small">Admin Reset</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <% }) %>

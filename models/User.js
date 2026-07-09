@@ -34,6 +34,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  manualResetRequested: {
+    type: Boolean,
+    default: false
+  },
+  mustChangePassword: {
+    type: Boolean,
+    default: false
+  },
   course: { type: String },
   school: { type: String },
   personalEmail: { type: String },
