@@ -50,51 +50,16 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  course: {
-    type: String,
-    default: 'N/A'
-  },
-  school: {
-    type: String,
-    default: 'N/A'
-  },
-  personalEmail: {
-    type: String,
-    default: ''
-  },
-  campusEmail: {
-    type: String,
-    default: ''
-  },
-  contactHome: {
-    type: String,
-    default: ''
-  },
-  contactMobile: {
-    type: String,
-    default: ''
-  },
-  dob: {
-    type: String,
-    default: ''
-  },
-  sex: {
-    type: String,
-    default: ''
-  },
-  nationality: {
-    type: String,
-    default: ''
-  },
-  address: {
-    type: String,
-    default: ''
-  },
-  themePreference: {
-    type: String,
-    enum: ['light', 'dark'],
-    default: 'light'
-  },
+  course: { type: String },
+  school: { type: String },
+  personalEmail: { type: String },
+  campusEmail: { type: String },
+  contactHome: { type: String },
+  contactMobile: { type: String },
+  dob: { type: String },
+  sex: { type: String },
+  nationality: { type: String },
+  address: { type: String },
   financials: {
     type: financialsSchema,
     default: () => ({
