@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+const paymentMethodSchema = new mongoose.Schema({
+  type: { type: String, default: '' },
+  maskedNumber: { type: String, default: '' },
+  brand: { type: String, default: '' }
+}, { _id: false });
+
+const financialsSchema = new mongoose.Schema({
+  outstandingBalance: { type: Number, default: 0 },
+  dueDate: { type: String, default: 'N/A' },
+  paymentMethods: { type: [paymentMethodSchema], default: [] }
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -13,7 +25,8 @@ const userSchema = new mongoose.Schema({
     match: /^[SEse]\d{7}$/
   },
   password: {
-    type: String
+    type: String,
+    default: ''
   },
   role: {
     type: String,
@@ -22,17 +35,32 @@ const userSchema = new mongoose.Schema({
     default: 'Student'
   },
   securityQuestion: {
-    type: String
+    type: String,
+    default: ''
   },
   securityAnswer: {
-    type: String
+    type: String,
+    default: ''
   },
   recoveryKey: {
-    type: String
+    type: String,
+    default: ''
   },
   isRegistered: {
     type: Boolean,
     default: false
+  },
+  manualResetRequested: {
+    type: Boolean,
+    default: false
+  },
+  mustChangePassword: {
+    type: Boolean,
+    default: false
+  },
+  temporaryPin: {
+    type: String,
+    default: null
   },
   course: { type: String },
   school: { type: String },
@@ -45,10 +73,13 @@ const userSchema = new mongoose.Schema({
   nationality: { type: String },
   address: { type: String },
   financials: {
-    outstandingBalance: { type: Number, default: 0 },
-    dueDate: { type: String, default: "N/A" },
-    paymentMethods: { type: Array, default: [] }
+    type: financialsSchema,
+    default: () => ({
+      outstandingBalance: 0,
+      dueDate: 'N/A',
+      paymentMethods: []
+    })
   }
-});
+}, { timestamps: false });
 
 module.exports = mongoose.model('User', userSchema);

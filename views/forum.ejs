@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Help Forum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/forum.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+  <% const currentUserId = user ? String(user.id) : ''; %>
+
+  <div class="forum-container">
+    <% if (success) { %>
+      <div class="notification success-notification" id="successNotification">
+        <% if (success === 'question-posted') { %>✅ Question posted successfully!<% } %>
+        <% if (success === 'reply-posted') { %>✅ Reply submitted!<% } %>
+        <% if (success === 'question-deleted') { %>✅ Question deleted successfully!<% } %>
+        <% if (success === 'question-updated') { %>✅ Question updated successfully!<% } %>
+        <% if (success === 'reply-updated') { %>✅ Reply updated successfully!<% } %>
+        <% if (success === 'reply-deleted') { %>✅ Reply deleted successfully!<% } %>
+        <% if (success === 'helpful-updated') { %>✅ Helpful vote updated!<% } %>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="notification error-notification" id="errorNotification">
+        <% if (error === 'cannot-help-own-reply') { %>
+          You cannot mark your own reply as helpful.
+        <% } else { %>
+          <%= error %>
+        <% } %>
+      </div>
+    <% } %>
+
+    <section class="forum-hero <%= isAdmin ? 'admin-hero' : '' %>">
+      <h1><%= isAdmin ? 'Admin Forum Dashboard' : 'Student Help Forum' %></h1>
+      <p>
+        <%= isAdmin
+          ? 'Review questions, manage replies, and keep the forum organized.'
+          : 'Ask questions, share knowledge, and help classmates succeed.' %>
+      </p>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card"><span class="stat-label">Total Questions</span><h3><%= totalQuestions %></h3></div>
+      <div class="stat-card"><span class="stat-label">Total Replies</span><h3><%= totalReplies %></h3></div>
+      <div class="stat-card"><span class="stat-label">Total Modules</span><h3><%= totalModules %></h3></div>
+    </section>
+
+    <% if (!isAdmin) { %>
+      <section class="ask-card">
+        <h2>Ask a Question</h2>
+        <form action="/forum" method="POST">
+          <div class="form-group">
+            <label for="category" class="form-label">Category</label>
+            <select name="category" id="category" class="form-select" required>
+              <option value="">Select a category</option>
+              <option value="Academic Modules">Academic Modules</option>
+              <option value="General Enquiries">General Enquiries</option>
+            </select>
+          </div>
+
+          <div class="forum-switch-block" id="academicBlock" style="display:none;">
+            <div class="form-group">
+              <label for="school" class="form-label">School</label>
+              <select name="school" id="school" class="form-select">
+                <option value="">Select a school</option>
+                <% Object.keys(academicModules).forEach((school) => { %>
+                  <option value="<%= school %>"><%= school %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="module" class="form-label">Module</label>
+              <select name="module" id="module" class="form-select">
+                <option value="">Select a module</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="forum-switch-block" id="generalBlock" style="display:none;">
+            <div class="form-group">
+              <label for="enquiryTopic" class="form-label">General Enquiry Topic</label>
+              <select name="enquiryTopic" id="enquiryTopic" class="form-select">
+                <option value="">Select a topic</option>
+                <% generalTopics.forEach((topic) => { %>
+                  <option value="<%= topic %>"><%= topic %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="title" class="form-label">Question Title</label>
+            <input type="text" id="title" name="title" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <textarea rows="5" id="description" name="description" class="form-input" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">Post Question</button>
+        </form>
+      </section>
+    <% } else { %>
+      <section class="admin-panel">
+        <div class="admin-panel__top">
+          <h2 class="admin-panel__title">Administrator Tools</h2>
+          <span class="admin-mode-badge">Admin Mode</span>
+        </div>
+        <p class="admin-panel__text">
+          Review questions, manage replies, and keep the forum organized.
+          Posting new questions is disabled for admin accounts.
+        </p>
+      </section>
+    <% } %>
+
+    <section class="search-card">
+      <h2>Search Questions</h2>
+      <input type="text" id="searchInput" class="form-input" placeholder="Search by category, title or description...">
+    </section>
+
+    <section class="forum-list">
+      <div class="forum-header">
+        <h2>Recent Questions</h2>
+        <p id="resultCount"><%= questions.length %> question(s)</p>
+      </div>
+
+      <% if (questions.length === 0) { %>
+        <div class="empty">No questions yet.</div>
+      <% } %>
+
+      <div id="questionsWrapper">
+        <% questions.forEach((question) => { %>
+          <article
+            id="q-<%= question._id %>"
+            class="question-card searchable-question <%= isAdmin ? 'admin-question-card' : '' %>"
+            data-category="<%= question.category.toLowerCase() %>"
+            data-school="<%= (question.school || '').toLowerCase() %>"
+            data-module="<%= (question.module || question.enquiryTopic || '').toLowerCase() %>"
+            data-title="<%= question.title.toLowerCase() %>"
+            data-description="<%= question.description.toLowerCase() %>"
+          >
+            <div class="question-top">
+              <div class="question-meta-row">
+                <span class="module"><%= question.category %></span>
+                <% if (question.category === 'Academic Modules' && question.school) { %>
+                  <span class="module secondary"><%= question.school %></span>
+                <% } %>
+                <% if (question.module) { %>
+                  <span class="module secondary"><%= question.module %></span>
+                <% } else if (question.enquiryTopic) { %>
+                  <span class="module secondary"><%= question.enquiryTopic %></span>
+                <% } %>
+                <span class="solved-badge <%= question.solved ? 'solved' : 'unsolved' %>">
+                  <%= question.solved ? '🟢 Solved' : '🔴 Unsolved' %>
+                </span>
+              </div>
+
+              <div class="question-actions">
+                <% if (isAdmin) { %>
+                  <% if (!question.solved) { %>
+                    <form action="/forum/solved/<%= question._id %>" method="POST">
+                      <button type="submit" class="action-btn solved-btn">Mark as Solved</button>
+                    </form>
+                  <% } %>
+                  <form action="/forum/delete/<%= question._id %>" method="POST" onsubmit="return confirm('Delete this question?')">
+                    <button type="submit" class="action-btn delete-btn">Delete</button>
+                  </form>
+                <% } else if (String(question.userId) === currentUserId) { %>
+                  <form action="/forum/delete/<%= question._id %>" method="POST" onsubmit="return confirm('Delete this question?')">
+                    <button type="submit" class="action-btn delete-btn">Delete</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+
+            <h3><%= question.title %></h3>
+            <p class="question-description"><%= question.description %></p>
+
+            <div class="question-footer">
+              <small>Posted by <strong><%= question.fullName %></strong> (<%= question.campusId %>)</small>
+              <small class="time-text"><%= question.relativeTime %></small>
+            </div>
+
+            <hr>
+
+            <div class="reply-section">
+              <h4>Replies (<%= question.replies.length %>)</h4>
+
+              <% if (question.replies.length === 0) { %>
+                <p class="noReply">No replies yet.</p>
+              <% } %>
+
+              <% question.replies.forEach((reply, replyIndex) => { %>
+                <div class="reply">
+                  <div class="reply-top">
+                    <div>
+                      <strong><%= reply.fullName %></strong>
+                      <span class="reply-meta"> • <%= reply.campusId %></span>
+                    </div>
+                    <small class="time-text"><%= reply.relativeTime %></small>
+                  </div>
+
+                  <% if (typeof editReply !== 'undefined' && editReply && String(editReply.questionId) === String(question._id) && editReply.replyIndex === replyIndex) { %>
+                    <form action="/forum/reply/edit/<%= question._id %>/<%= replyIndex %>" method="POST" class="reply-edit-form">
+                      <textarea name="replyText" rows="3" required><%= editReply.text %></textarea>
+                      <div class="reply-actions">
+                        <button type="submit" class="btn-submit">Save</button>
+                        <a href="/forum#q-<%= question._id %>" class="action-btn delete-btn">Cancel</a>
+                      </div>
+                    </form>
+                  <% } else { %>
+                    <p><%= reply.text %></p>
+
+                    <div class="reply-actions">
+                      <% if (!reply.userId || String(reply.userId) !== currentUserId) { %>
+                        <form action="/forum/reply/helpful/<%= question._id %>/<%= replyIndex %>" method="POST">
+                          <button type="submit" class="helpful-btn">👍 Helpful (<%= reply.helpful || 0 %>)</button>
+                        </form>
+                      <% } %>
+
+                      <% if (isAdmin || String(reply.userId) === currentUserId) { %>
+                        <% if (String(reply.userId) === currentUserId) { %>
+                          <a class="action-btn edit-btn" href="/forum/reply/edit/<%= question._id %>/<%= replyIndex %>">Edit</a>
+                        <% } %>
+                        <form action="/forum/reply/delete/<%= question._id %>/<%= replyIndex %>" method="POST" onsubmit="return confirm('Delete this reply?')">
+                          <button type="submit" class="action-btn delete-btn">Delete</button>
+                        </form>
+                      <% } %>
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+
+              <form action="/forum/reply/<%= question._id %>" method="POST" class="replyForm">
+                <textarea name="reply" rows="3" class="form-input" placeholder="Write your reply..." required></textarea>
+                <button type="submit" class="btn-submit">Reply</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+
+      <div class="empty search-empty" id="noSearchResults" style="display:none;">No matching questions found.</div>
+    </section>
+  </div>
+
+  <script>
+    const academicModules = JSON.parse('<%- JSON.stringify(academicModules) %>');
+    const category = document.getElementById('category');
+    const school = document.getElementById('school');
+    const moduleSelect = document.getElementById('module');
+    const academicBlock = document.getElementById('academicBlock');
+    const generalBlock = document.getElementById('generalBlock');
+
+    function loadModulesForSchool(selectedSchool) {
+      if (!moduleSelect) return;
+      moduleSelect.innerHTML = '<option value="">Select a module</option>';
+      if (!selectedSchool || !academicModules[selectedSchool]) return;
+      academicModules[selectedSchool].forEach((m) => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        moduleSelect.appendChild(opt);
+      });
+    }
+
+    if (category) {
+      category.addEventListener('change', () => {
+        const val = category.value;
+        if (academicBlock) academicBlock.style.display = val === 'Academic Modules' ? 'block' : 'none';
+        if (generalBlock) generalBlock.style.display = val === 'General Enquiries' ? 'block' : 'none';
+        if (school) school.required = val === 'Academic Modules';
+        if (moduleSelect) moduleSelect.required = val === 'Academic Modules';
+        const enquiryTopic = document.getElementById('enquiryTopic');
+        if (enquiryTopic) enquiryTopic.required = val === 'General Enquiries';
+      });
+    }
+
+    if (school) {
+      school.addEventListener('change', () => loadModulesForSchool(school.value));
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    const questionCards = document.querySelectorAll('.searchable-question');
+    const resultCount = document.getElementById('resultCount');
+    const noSearchResults = document.getElementById('noSearchResults');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const searchValue = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        questionCards.forEach(card => {
+          const matches =
+            card.dataset.category.includes(searchValue) ||
+            card.dataset.school.includes(searchValue) ||
+            card.dataset.module.includes(searchValue) ||
+            card.dataset.title.includes(searchValue) ||
+            card.dataset.description.includes(searchValue);
+
+          card.style.display = matches ? 'block' : 'none';
+          if (matches) visibleCount++;
+        });
+
+        if (resultCount) resultCount.textContent = `${visibleCount} question(s)`;
+        if (noSearchResults) noSearchResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      });
+    }
+
+    const notification = document.getElementById('successNotification');
+    if (notification) {
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-10px)';
+        setTimeout(() => { notification.style.display = 'none'; }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
