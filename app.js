@@ -10,6 +10,12 @@ const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
 
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'campus-portal-secret',
+    resave: false,
+    saveUninitialized: false
+}));
+
 mongoose.connect(process.env.MONGO_URI, { family: 4 })
     .then(() => console.log(' MongoDB Connected Successfully to CampusPortal!'))
     .catch(err => console.error(' MongoDB Connection Error:', err));
@@ -25,7 +31,13 @@ app.set('view engine', 'ejs');
 
 // When a user visits the root URL ('/'), render the index.ejs file
 app.get('/', (req, res) => {
-    res.render('index');
+    const profile = req.session?.user || {
+        fullName: 'Guest User',
+        campusId: 'GUEST001',
+        role: 'Student',
+        recoveryKey: 'CP-1234567890'
+    };
+    res.render('index', { profile });
 });
 
 // Room booking routes
