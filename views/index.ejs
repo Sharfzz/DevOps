@@ -73,6 +73,27 @@
             margin: 0 auto;
         }
 
+        .hero-cta {
+            display: inline-block;
+            margin-top: 2rem;
+            background-color: var(--accent);
+            color: #FFFFFF;
+            padding: 0.75rem 1.75rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .hero-cta:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .hero-cta:active {
+            transform: scale(0.98);
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -104,6 +125,7 @@
             <section class="hero">
                 <h1>Welcome to Campus Portal</h1>
                 <p>Access your student resources, connect with peers, and manage your campus life efficiently.</p>
+                <a href="/feedback" class="hero-cta">Go to Feedback &amp; Maintenance Tickets</a>
             </section>
         </main>
 
