@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,165 +9,226 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+    </style>
 </head>
+
 <body>
 
-<%- include('../partials/navbar') %>
+    <%- include('../partials/navbar') %>
 
-<main class="main-container">
+        <main class="main-container">
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <a href="/rooms">All Rooms</a> /
-        <a href="/rooms/<%= room._id %>"><%= room.name %></a> /
-        <span>Book</span>
-    </div>
-
-    <!-- Flash Messages -->
-    <% if (locals.success && success.length > 0) { %>
-        <div class="flash flash-success"><%= success %></div>
-    <% } %>
-    <% if (locals.error && error.length > 0) { %>
-        <div class="flash flash-error"><%= error %></div>
-    <% } %>
-
-    <div class="form-wrapper">
-        <div class="form-card">
-            <div class="room-card-accent"></div>
-            <div class="room-card-body">
-                <h2 class="page-title">Book a Room</h2>
-                <p class="page-subtitle"><%= room.name %> &mdash; Capacity: <%= room.capacity %> pax</p>
-
-                <form action="/rooms/<%= room._id %>/book" method="POST">
-
-                    <!-- Student Details -->
-                    <div class="form-section-label">Student Details</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Full Name <span class="required">*</span></label>
-                            <input type="text" class="input-field" name="studentName" required
-                                   placeholder="e.g. Tan Wei Ming" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Student ID <span class="required">*</span></label>
-                            <input type="text" class="input-field" name="studentId" required
-                                   placeholder="e.g. 23012345A" maxlength="10" />
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Group Size <span class="required">*</span></label>
-                            <input type="number" class="input-field" name="groupSize"
-                                   min="1" max="<%= room.capacity %>" value="1" required />
-                            <span class="form-hint">Max <%= room.capacity %> pax</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Purpose</label>
-                            <select class="input-field" name="purpose">
-                                <option value="Study Session">Study Session</option>
-                                <option value="Group Project">Group Project</option>
-                                <option value="Presentation Practice">Presentation Practice</option>
-                                <option value="Revision">Revision</option>
-                                <option value="Club/CCA Meeting">Club / CCA Meeting</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Schedule -->
-                    <div class="form-section-label" style="margin-top:1.5rem">Booking Schedule</div>
-                    <div class="form-group">
-                        <label class="form-label">Date <span class="required">*</span></label>
-                        <input type="date" class="input-field" name="date"
-                               value="<%= selectedDate %>"
-                               min="<%= new Date().toISOString().split('T')[0] %>" required />
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Start Time <span class="required">*</span></label>
-                            <select class="input-field" name="startTime" id="startTime" required>
-                                <% timeSlots.forEach(slot => { %>
-                                    <% const isBooked = bookedSlots.includes(slot.start); %>
-                                    <option value="<%= slot.start %>" <%= selectedStart === slot.start ? 'selected' : '' %> <%= isBooked ? 'disabled' : '' %>>
-                                        <%= slot.start %><%= isBooked ? ' (unavailable)' : '' %>
-                                    </option>
-                                <% }) %>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">End Time <span class="required">*</span></label>
-                            <select class="input-field" name="endTime" id="endTime" required>
-                                <% timeSlots.forEach((slot, i) => { %>
-                                    <% if (i > 0) { %>
-                                        <% const isBooked = bookedSlots.includes(slot.start); %>
-                                        <option value="<%= slot.start %>" <%= isBooked ? 'disabled' : '' %>>
-                                            <%= slot.start %><%= isBooked ? ' (unavailable)' : '' %>
-                                        </option>
-                                    <% } %>
-                                <% }) %>
-                                <option value="22:00">22:00</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Notice -->
-                    <div class="notice">
-                        ⚠️ Please ensure the room is vacated by your end time. Bookings are non-transferable.
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
-                        <a href="/rooms/<%= room._id %>?date=<%= selectedDate %>" class="btn btn-outline">Cancel</a>
-                    </div>
-                </form>
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/rooms">All Rooms</a> /
+                <a href="/rooms/<%= room._id %>">
+                    <%= room.name %>
+                </a> /
+                <span>Book</span>
             </div>
-        </div>
-    </div>
-</main>
 
-<div id="booked-data" data-slots='<%= JSON.stringify(bookedSlots || []) %>'></div>
 
-<script>
-    const startSelect = document.getElementById('startTime');
-    const endSelect = document.getElementById('endTime');
-    const allTimes = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
-    const booked = JSON.parse(document.getElementById('booked-data').dataset.slots);
 
-    function updateEndOptions() {
-        const startIdx = allTimes.indexOf(startSelect.value);
-        const currentEnd = endSelect.value;
-        endSelect.innerHTML = '';
+            <div class="form-wrapper">
+                <!-- Flash Messages -->
+                <div style="position: relative; width: 100%; margin-bottom: 1rem;">
+                    <% if (locals.success && success.length> 0) { %>
+                        <div class="flash flash-success"
+                            style="width: max-content; white-space: nowrap; position: relative; left: 50%; transform: translateX(-50%); text-align: center; box-sizing: border-box; font-size: 0.825rem; padding: 12px 24px; margin: 0;">
+                            <%= success %>
+                        </div>
+                        <% } %>
+                            <% if (locals.error && error.length> 0) { %>
+                                <div class="flash flash-error"
+                                    style="width: max-content; white-space: nowrap; position: relative; left: 50%; transform: translateX(-50%); text-align: center; box-sizing: border-box; font-size: 0.825rem; padding: 12px 24px; margin: 0;">
+                                    <%= error %>
+                                </div>
+                                <% } %>
+                </div>
+                <div class="form-card">
+                    <div class="room-card-accent"></div>
+                    <div class="room-card-body">
+                        <h2 class="page-title">Book a Room</h2>
+                        <p class="page-subtitle">
+                            <%= room.name %> &mdash; Capacity: <%= room.capacity %> pax
+                        </p>
 
-        for (let i = startIdx + 1; i < allTimes.length; i++) {
-            const t = allTimes[i];
-            if (booked.includes(t)) break;
-            const opt = document.createElement('option');
-            opt.value = t;
-            opt.textContent = t;
-            if (t === currentEnd) opt.selected = true;
-            endSelect.appendChild(opt);
-        }
+                        <form action="/rooms/<%= room._id %>/book" method="POST">
 
-        const last = allTimes[allTimes.length - 1];
-        if (!booked.includes(last) && startIdx < allTimes.length - 1 && !Array.from(endSelect.options).find(o => o.value === '22:00')) {
-            const opt = document.createElement('option');
-            opt.value = '22:00';
-            opt.textContent = '22:00';
-            if ('22:00' === currentEnd) opt.selected = true;
-            endSelect.appendChild(opt);
-        }
+                            <!-- Reservation Details -->
+                            <div class="form-section-label">RESERVATION DETAILS</div>
 
-        if (endSelect.options.length && !endSelect.value) {
-            endSelect.options[0].selected = true;
-        }
-    }
+                            <div
+                                style="background-color: #f1f5f9; border-radius: 8px; padding: 12px 16px; margin-bottom: 1.5rem; font-size: 0.875rem; color: #475569; display: flex; flex-direction: column; gap: 0.25rem;">
+                                <div>Room Booking Limit: <strong>
+                                        <%= roomQuota %>/3 remaining today
+                                    </strong></div>
+                                <div>Global Booking Limit: <strong>
+                                        <%= globalQuota %>/5 remaining today
+                                    </strong></div>
+                            </div>
 
-    startSelect.addEventListener('change', updateEndOptions);
-    updateEndOptions();
-</script>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Group Size <span class="required">*</span></label>
+                                    <input type="number" class="input-field" name="groupSize" min="1"
+                                        max="<%= room.capacity %>" value="1" required />
+                                    <span class="form-hint">Max <%= room.capacity %> pax</span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Purpose</label>
+                                    <select class="input-field" name="purpose">
+                                        <option value="Study Session">Study Session</option>
+                                        <option value="Group Project">Group Project</option>
+                                        <option value="Presentation Practice">Presentation Practice
+                                        </option>
+                                        <option value="Revision">Revision</option>
+                                        <option value="Club/CCA Meeting">Club / CCA Meeting</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Schedule -->
+                            <div class="form-section-label" style="margin-top:1.5rem">Booking Schedule
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date <span class="required">*</span></label>
+                                <input type="text" id="modern-date-picker" class="input-field" name="date"
+                                    value="<%= selectedDate %>" required />
+                            </div>
+
+                            <div class="form-row">
+                                <% 
+                                    function isSlotPassed(dateStr, timeStr) {
+                                        const now = new Date();
+                                        const slotDate = new Date(dateStr);
+                                        const [hours, minutes] = timeStr.split(':').map(Number);
+                                        slotDate.setHours(hours, minutes, 0, 0);
+                                        return now > slotDate;
+                                    }
+                                %>
+                                <div class="form-group">
+                                    <label class="form-label">Start Time <span class="required">*</span></label>
+                                    <select class="input-field" name="startTime" id="startTime" required>
+                                        <% timeSlots.forEach(slot=> { %>
+                                            <% 
+                                                const isBooked=bookedSlots.includes(slot.start);
+                                                const isPassed=isSlotPassed(selectedDate, slot.start);
+                                                const isDisabled = isBooked || isPassed;
+                                            %>
+                                                <option value="<%= slot.start %>" <%=selectedStart===slot.start
+                                                    ? 'selected' : '' %>
+                                                    <%= isDisabled ? 'disabled' : '' %>
+                                                    style="<%= (isPassed && !isBooked) ? 'color: gray;' : '' %>">
+                                                        <%= slot.start %>
+                                                            <%= isDisabled ? ' (unavailable)' : '' %>
+                                                </option>
+                                                <% }) %>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">End Time <span class="required">*</span></label>
+                                    <select class="input-field" name="endTime" id="endTime" required>
+                                        <% timeSlots.forEach((slot, i)=> { %>
+                                            <% if (i> 0) { %>
+                                                <% 
+                                                    const isBooked=bookedSlots.includes(slot.start);
+                                                    const isPassed=isSlotPassed(selectedDate, slot.start);
+                                                    const isDisabled = isBooked || isPassed;
+                                                %>
+                                                    <option value="<%= slot.start %>" <%=isDisabled ? 'disabled' : '' %> style="<%= (isPassed && !isBooked) ? 'color: gray;' : '' %>">
+                                                        <%= slot.start %>
+                                                            <%= isDisabled ? ' (unavailable)' : '' %>
+                                                    </option>
+                                                    <% } %>
+                                                        <% }) %>
+                                                            <% 
+                                                                const is22Passed = isSlotPassed(selectedDate, '22:00');
+                                                            %>
+                                                            <option value="22:00" <%=is22Passed ? 'disabled' : '' %> style="<%= is22Passed ? 'color: gray;' : '' %>">22:00<%= is22Passed ? ' (unavailable)' : '' %></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Notice -->
+                            <div class="notice">
+                                ⚠️ Please ensure the room is vacated by your end time. Bookings are
+                                non-transferable.
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                                <a href="/rooms/<%= room._id %>?date=<%= selectedDate %>"
+                                    class="btn btn-outline">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="booked-data" data-slots='<%= JSON.stringify(bookedSlots || []) %>'></div>
+
+        <script>
+            const startSelect = document.getElementById('startTime');
+            const endSelect = document.getElementById('endTime');
+            const allTimes = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+            const booked = JSON.parse(document.getElementById('booked-data').dataset.slots);
+
+            function updateEndOptions() {
+                const startIdx = allTimes.indexOf(startSelect.value);
+                const currentEnd = endSelect.value;
+                endSelect.innerHTML = '';
+
+                for (let i = startIdx + 1; i < allTimes.length; i++) {
+                    const t = allTimes[i];
+                    if (booked.includes(t)) break;
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.textContent = t;
+                    if (t === currentEnd) opt.selected = true;
+                    endSelect.appendChild(opt);
+                }
+
+                const last = allTimes[allTimes.length - 1];
+                if (!booked.includes(last) && startIdx < allTimes.length - 1 && !Array.from(endSelect.options).find(o => o.value === '22:00')) {
+                    const opt = document.createElement('option');
+                    opt.value = '22:00';
+                    opt.textContent = '22:00';
+                    if ('22:00' === currentEnd) opt.selected = true;
+                    endSelect.appendChild(opt);
+                }
+
+                if (endSelect.options.length && !endSelect.value) {
+                    endSelect.options[0].selected = true;
+                }
+            }
+
+            startSelect.addEventListener('change', updateEndOptions);
+            updateEndOptions();
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+            flatpickr("#modern-date-picker", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d-m-Y",
+                minDate: "today",
+                disableMobile: "true"
+            });
+        </script>
 
 </body>
+
 </html>

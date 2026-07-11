@@ -37,6 +37,10 @@ const bookingSchema = new mongoose.Schema({
   endTime: {
     type: String,
     required: true
+  },
+  isExtended: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 

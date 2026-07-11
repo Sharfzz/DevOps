@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,74 +9,127 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .hover-error-bg {
+            background-color: #ef4444 !important;
+            border-color: #ef4444 !important;
+            color: white !important;
+        }
+    </style>
 </head>
+
 <body>
 
-<%- include('../partials/navbar') %>
+    <%- include('../partials/navbar') %>
 
-<main class="main-container">
+        <main class="main-container">
 
-    <!-- Page Header -->
-    <div class="page-header">
-        <div>
-            <h2 class="page-title">Library Room Booking</h2>
-            <p class="page-subtitle">Browse available rooms and reserve a slot for your session.</p>
-        </div>
-        <a href="/rooms/seed" class="btn btn-outline">+ Seed Sample Rooms</a>
-    </div>
-
-    <!-- Flash Messages -->
-    <% if (locals.success && success.length > 0) { %>
-        <div class="flash flash-success"><%= success %></div>
-    <% } %>
-    <% if (locals.error && error.length > 0) { %>
-        <div class="flash flash-error"><%= error %></div>
-    <% } %>
-
-    <!-- Date Filter -->
-    <div class="filter-bar">
-        <form method="GET" action="/rooms" class="filter-form">
-            <label class="filter-label">Check availability for:</label>
-            <input type="date" class="input-field" name="date" value="<%= today %>" min="<%= today %>" />
-            <button type="submit" class="btn btn-primary">Check</button>
-        </form>
-    </div>
-
-    <!-- Room Grid -->
-    <% if (rooms.length === 0) { %>
-        <div class="empty-state">
-            <div class="empty-icon">🚪</div>
-            <p>No rooms available. Click <strong>Seed Sample Rooms</strong> to get started.</p>
-        </div>
-    <% } else { %>
-        <div class="room-grid">
-            <% rooms.forEach(room => { %>
-                <div class="room-card">
-                    <div class="room-card-accent"></div>
-                    <div class="room-card-body">
-                        <h3 class="room-name"><%= room.name %></h3>
-                        <p class="room-desc"><%= room.description %></p>
-                        <div class="room-meta">
-                            <span class="meta-badge">👥 Up to <%= room.capacity %> pax</span>
-                        </div>
-                        <% if (room.amenities && room.amenities.length > 0) { %>
-                            <div class="amenities">
-                                <% room.amenities.forEach(a => { %>
-                                    <span class="amenity-tag">✓ <%= a %></span>
-                                <% }) %>
-                            </div>
-                        <% } %>
-                    </div>
-                    <div class="room-card-footer">
-                        <a href="/rooms/<%= room._id %>?date=<%= today %>" class="btn btn-primary btn-full">
-                            View Availability →
-                        </a>
-                    </div>
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Library Room Booking</h2>
+                    <p class="page-subtitle">Browse available rooms and reserve a slot for your session.</p>
                 </div>
-            <% }) %>
-        </div>
-    <% } %>
-</main>
+            </div>
 
+            <!-- Flash Messages -->
+            <% if (locals.success && success.length> 0) { %>
+                <div class="flash flash-success">
+                    <%= success %>
+                </div>
+                <% } %>
+                    <% if (locals.error && error.length> 0) { %>
+                        <div class="flash flash-error">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <!-- Date Filter -->
+                            <div class="filter-bar">
+                                <form method="GET" action="/rooms" class="filter-form">
+                                    <label class="filter-label">Check availability for:</label>
+                                    <input type="text" id="modern-date-picker" class="input-field" name="date"
+                                        value="<%= today %>" />
+                                    <button type="submit" class="btn btn-primary">Check</button>
+                                </form>
+                            </div>
+
+                            <!-- Room Grid -->
+                            <% if (rooms.length===0) { %>
+                                <div class="empty-state">
+                                    <div class="empty-icon">🚪</div>
+                                    <p>No rooms available.</p>
+                                </div>
+                                <% } else { %>
+                                    <div class="room-grid">
+                                        <% rooms.forEach(room=> { %>
+                                            <div class="room-card">
+                                                <div class="room-card-accent"></div>
+                                                <div class="room-card-body">
+                                                    <h3 class="room-name">
+                                                        <%= room.name %>
+                                                    </h3>
+                                                    <p class="room-desc">
+                                                        <%= room.description %>
+                                                    </p>
+                                                    <div class="room-meta">
+                                                        <span class="meta-badge">👥 Up to <%= room.capacity %>
+                                                                pax</span>
+                                                    </div>
+                                                    <% if (room.amenities && room.amenities.length> 0) { %>
+                                                        <div class="amenities">
+                                                            <% room.amenities.forEach(a=> { %>
+                                                                <span class="amenity-tag">✓ <%= a %></span>
+                                                                <% }) %>
+                                                        </div>
+                                                        <% } %>
+                                                </div>
+                                                <div class="room-card-footer">
+                                                    <a href="/rooms/<%= room._id %>?date=<%= today %>"
+                                                        class="btn btn-primary btn-full view-availability-btn"
+                                                        data-default-text="View Availability &rarr;"
+                                                        data-slots="<%= typeof room.availableSlots !== 'undefined' ? room.availableSlots : 0 %>">View Availability &rarr;</a>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                    <% } %>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+            flatpickr("#modern-date-picker", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d-m-Y",
+                minDate: "today",
+                disableMobile: "true"
+            });
+
+            document.querySelectorAll('.view-availability-btn').forEach(function(btn) {
+                btn.addEventListener('mouseenter', function() {
+                    const slots = parseInt(this.getAttribute('data-slots'), 10) || 0;
+                    if (slots === 0) {
+                        this.innerText = "Unavailable for today";
+                        this.classList.add('hover-error-bg');
+                    } else {
+                        this.innerText = `${slots} slots available`;
+                    }
+                });
+                btn.addEventListener('mouseleave', function() {
+                    this.innerHTML = this.getAttribute('data-default-text');
+                    this.classList.remove('hover-error-bg');
+                });
+            });
+        </script>
 </body>
+
 </html>

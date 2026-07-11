@@ -626,7 +626,32 @@ app.post('/profile/theme', requireLogin, async (req, res) => {
   }
 });
 
+// === CUSTOM MIDDLEWARE FOR ROOM BOOKINGS ===
+app.use((req, res, next) => {
+    if (req.query && req.query._method) {
+        req.method = req.query._method.toUpperCase();
+    }
+    req.flash = function(type, message) {
+        if (!req.session.flash) req.session.flash = {};
+        req.session.flash[type] = message;
+    };
+    res.locals.success = req.session.flash?.success || '';
+    res.locals.error = req.session.flash?.error || '';
+    req.session.flash = null;
+    next();
+});
 
+// === ROOM BOOKINGS ROUTING ===
+const roomsRouter = require('./routes/rooms');
+app.use('/rooms', requireLogin, roomsRouter);
+
+// Map the specific UI triggers for Students and Staff
+app.get('/room-booking', requireLogin, (req, res) => {
+    res.redirect('/rooms');
+});
+app.get('/booking', requireLogin, (req, res) => {
+    res.redirect('/rooms');
+});
 
 app.get('/forum', requireLogin, async (req, res) => {
   try {

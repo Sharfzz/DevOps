@@ -15,6 +15,10 @@ const roomSchema = new mongoose.Schema({
     required: true,
     min: 1
   },
+  layout: {
+    type: String,
+    default: 'Standard'
+  },
   amenities: {
     type: [String],
     default: []
