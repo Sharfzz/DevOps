@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= room.name %> – Availability
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <%- include('../partials/navbar') %>
+
+        <main class="main-container">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/rooms">All Rooms</a> / <span>
+                    <%= room.name %>
+                </span>
+            </div>
+
+            <!-- Flash Messages -->
+            <% if (locals.success && success.length> 0) { %>
+                <div class="flash flash-success">
+                    <%= success %>
+                </div>
+                <% } %>
+                    <% if (locals.error && error.length> 0) { %>
+                        <div class="flash flash-error">
+                            <%= error %>
+                        </div>
+                        <% } %>
+
+                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                                <a href="/rooms" class="btn btn-outline">← Back to All Rooms</a>
+                                <a href="/rooms/my-bookings" class="btn btn-outline">View My Bookings</a>
+                            </div>
+
+                            <div class="two-col">
+
+                                <!-- Left: Room Info -->
+                                <aside class="room-info-card">
+                                    <div class="room-card-accent"></div>
+                                    <div class="room-card-body">
+                                        <h3 class="room-name">
+                                            <%= room.name %>
+                                        </h3>
+                                        <p class="room-desc">
+                                            <%= room.description %>
+                                        </p>
+                                        <p class="meta-badge" style="margin-top:0.75rem">👥 Capacity: <strong>
+                                                <%= room.capacity %> pax
+                                            </strong></p>
+
+                                        <% if (room.amenities && room.amenities.length> 0) { %>
+                                            <div class="amenities" style="margin-top:1rem">
+                                                <% room.amenities.forEach(a=> { %>
+                                                    <span class="amenity-tag">✓ <%= a %></span>
+                                                    <% }) %>
+                                            </div>
+                                            <% } %>
+
+                                                <!-- Legend -->
+                                                <div class="legend">
+                                                    <h4 class="legend-title">Legend</h4>
+                                                    <div class="legend-item">
+                                                        <div class="legend-dot available-dot"></div><span>Available —
+                                                            click to book</span>
+                                                    </div>
+                                                    <div class="legend-item">
+                                                        <div class="legend-dot booked-dot"></div><span>Already
+                                                            booked</span>
+                                                    </div>
+                                                </div>
+                                    </div>
+                                </aside>
+
+                                <!-- Right: Availability -->
+                                <section class="availability-panel">
+
+                                    <!-- Date Picker -->
+                                    <div class="avail-header">
+                                        <h3 class="section-title">Availability</h3>
+                                        <form method="GET" action="/rooms/<%= room._id %>" class="filter-form">
+                                            <input type="text" id="modern-date-picker" class="input-field input-sm"
+                                                name="date" value="<%= selectedDate %>" />
+                                            <button class="btn btn-primary btn-sm" type="submit">View</button>
+                                        </form>
+                                    </div>
+
+                                    <p class="date-label">Slots for <strong>
+                                            <%= ('0' + new Date(selectedDate + 'T00:00:00' ).getDate()).slice(-2) + '-'
+                                                + ('0' + (new Date(selectedDate + 'T00:00:00' ).getMonth() +
+                                                1)).slice(-2) + '-' + new Date(selectedDate + 'T00:00:00'
+                                                ).getFullYear() %>
+                                        </strong></p>
+
+                                    <!-- Slot Grid -->
+                                    <% 
+                                        function isSlotPassed(dateStr, timeStr) {
+                                            const now = new Date();
+                                            const slotDate = new Date(dateStr);
+                                            const [hours, minutes] = timeStr.split(':').map(Number);
+                                            slotDate.setHours(hours, minutes, 0, 0);
+                                            return now > slotDate;
+                                        }
+                                    %>
+                                    <div class="slot-grid">
+                                        <% timeSlots.forEach(slot=> { %>
+                                            <% 
+                                                const isBooked=bookedSlots.includes(slot.start); 
+                                                const isPassed=isSlotPassed(selectedDate, slot.start);
+                                            %>
+                                                <% if (isBooked) { %>
+                                                    <div class="slot booked">
+                                                        <span class="slot-time">
+                                                            <%= slot.label %>
+                                                        </span>
+                                                        <span class="slot-status">Booked</span>
+                                                    </div>
+                                                <% } else if (isPassed) { %>
+                                                    <div class="slot" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #94a3b8; cursor: not-allowed; text-decoration: none;">
+                                                        <span class="slot-time">
+                                                            <%= slot.label %>
+                                                        </span>
+                                                        <span class="slot-status">Unavailable</span>
+                                                    </div>
+                                                <% } else { %>
+                                                        <a href="/rooms/<%= room._id %>/book?date=<%= selectedDate %>&start=<%= slot.start %>"
+                                                            class="slot available">
+                                                            <span class="slot-time">
+                                                                <%= slot.label %>
+                                                            </span>
+                                                            <span class="slot-status">Available</span>
+                                                        </a>
+                                                <% } %>
+                                        <% }) %>
+                                    </div>
+
+
+                                </section>
+                            </div>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+            function initFlatpickr() {
+                // Part 1: Ensure the default state uses standard JavaScript date objects for today if no value is present
+                const dateInput = document.getElementById("modern-date-picker");
+                const initDate = dateInput.value || new Date();
+
+                flatpickr("#modern-date-picker", {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d-m-Y",
+                    defaultDate: initDate,
+                    minDate: "today",
+                    disableMobile: "true"
+                });
+            }
+
+            initFlatpickr();
+
+            // Part 2: Preserve State During Cancellation via Reactive Fetch
+            async function handleCancel(event, form) {
+                event.preventDefault();
+                if (!confirm('Cancel this booking?')) return;
+
+                try {
+                    const response = await fetch(form.action, { method: 'POST' });
+                    if (response.ok) {
+                        // Re-fetch the availability data using the currently active selectedDate state (URL)
+                        const htmlRes = await fetch(window.location.href);
+                        const html = await htmlRes.text();
+
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Update the UI reactively
+                        const newPanel = doc.querySelector('.availability-panel').innerHTML;
+                        document.querySelector('.availability-panel').innerHTML = newPanel;
+
+                        // Re-initialize flatpickr on the newly inserted DOM elements
+                        initFlatpickr();
+                    } else {
+                        console.error('Failed to cancel booking');
+                        alert('Failed to cancel booking.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error cancelling booking.');
+                }
+            }
+        </script>
+</body>
+
+</html>

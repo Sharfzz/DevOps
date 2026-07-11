@@ -117,8 +117,12 @@
 </head>
 
 <body>
+  <%- include('partials/navbar') %>
 
-    <%- include('partials/navbar') %>
+    <% const isStaff=profile.campusId && profile.campusId.toUpperCase().startsWith('E'); const role=isStaff ? 'Staff'
+      : 'Student' ; const
+      avatarUrl=`https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=${isStaff
+      ? '8b5cf6' : '3b82f6' }&color=fff&size=128`; %>
 
         <!-- Main Content -->
         <main class="main-container">
@@ -129,6 +133,180 @@
             </section>
         </main>
 
+        <!-- Unified Dashboard Grid -->
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; margin-top: 24px;">
+
+          <!-- Left Panel: Profile Card -->
+          <div class="dash-panel-left" style="width: 100%;">
+            <div class="dash-card">
+              <h2 class="dash-card-header">Your Profile</h2>
+              <div class="profile-info">
+                <div class="info-row">
+                  <span class="info-label">Name</span>
+                  <span class="info-value">
+                    <%= profile.fullName %>
+                  </span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">
+                    <%= isStaff ? 'Staff ID' : 'Student ID' %>
+                  </span>
+                  <span class="info-value">
+                    <%= profile.campusId %>
+                  </span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Role</span>
+                  <span class="role-badge <%= isStaff ? 'staff' : '' %>">
+                    <%= role %>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Dashboard Content -->
+          <div class="dash-panel-right"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+
+            <!-- Quick Access Panel -->
+            <div class="dash-card" style="grid-column: span 2;">
+              <h2 class="dash-card-header">Quick Access</h2>
+              <div class="quick-access-grid">
+                <% if (isStaff || profile.role==='Admin' ) { %>
+                  <a href="/admin/helpdesk" class="qa-item staff">
+                    <div class="qa-icon">⚙️</div>
+                    <span class="qa-text">IT Helpdesk</span>
+                  </a>
+                  <a href="/forum" class="qa-item staff">
+                    <div class="qa-icon">💬</div>
+                    <span class="qa-text">Forum</span>
+                  </a>
+                  <a href="/profile" class="qa-item staff">
+                    <div class="qa-icon">👤</div>
+                    <span class="qa-text">Profile</span>
+                  </a>
+                  <% } else { %>
+                    <a href="/forum" class="qa-item">
+                      <div class="qa-icon">💬</div>
+                      <span class="qa-text">Student Forum</span>
+                    </a>
+                    <a href="/room-booking" class="qa-item">
+                        <div class="qa-icon">📅</div>
+                        <span class="qa-text">Room Booking</span>
+                    </a>
+                    <a href="/profile" class="qa-item">
+                      <div class="qa-icon">👤</div>
+                      <span class="qa-text">Profile</span>
+                    </a>
+                    <% } %>
+              </div>
+            </div>
+
+            <!-- Notifications Panel -->
+            <div class="dash-card">
+              <h2 class="dash-card-header">Notifications</h2>
+              <ul class="notif-list">
+                <li class="notif-item">
+                  <div class="notif-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </div>
+                  <div class="notif-content">
+                    <h4>Forum Reply</h4>
+                    <p>Prof. Smith replied to your thread.</p>
+                    <div class="notif-time">2 hours ago</div>
+                  </div>
+                </li>
+                <li class="notif-item success">
+                  <div class="notif-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                  </div>
+                  <div class="notif-content">
+                    <h4>Booking Confirmed</h4>
+                    <p>Study Room B booked for tomorrow 2 PM.</p>
+                    <div class="notif-time">Yesterday</div>
+                  </div>
+                </li>
+                <li class="notif-item warning">
+                  <div class="notif-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <div class="notif-content">
+                    <h4>System Update</h4>
+                    <p>Portal maintenance scheduled for Sunday.</p>
+                    <div class="notif-time">3 days ago</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Portal Modules Panel -->
+            <div class="dash-card">
+              <h2 class="dash-card-header">Portal Modules</h2>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <% if (role==='Student' ) { %>
+                  <div class="module-item">
+                    <div>
+                      <h4>Financial Hub</h4>
+                      <p>Tuition and fee payments</p>
+                    </div>
+                    <a href="/financial" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <div class="module-item">
+                    <div>
+                      <h4>Student Forum</h4>
+                      <p>Join campus discussions and announcements</p>
+                    </div>
+                    <a href="/forum" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <div class="module-item">
+                    <div>
+                      <h4>My Bookings</h4>
+                      <p>View and manage your upcoming reservations.</p>
+                    </div>
+                    <a href="/rooms/my-bookings" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <% } %>
+
+                    <% if (isStaff) { %>
+                      <div class="module-item">
+                        <div>
+                          <h4>IT Helpdesk</h4>
+                          <p>Manage manual password resets</p>
+                        </div>
+                        <a href="/admin/helpdesk" class="btn-module"
+                          style="text-decoration: none; display: inline-block;">Open</a>
+                      </div>
+                      <div class="module-item">
+                        <div>
+                          <h4>Forum</h4>
+                          <p>Access and manage campus-wide discussions</p>
+                        </div>
+                        <a href="/forum" class="btn-module"
+                          style="text-decoration: none; display: inline-block;">Open</a>
+                      </div>
+                      <% } %>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
 </body>
 
 </html>

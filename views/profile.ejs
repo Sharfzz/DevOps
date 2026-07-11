@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Campus Portal - Profile</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    
+    <style>
+        body {
+            background-color: #f8fafc;
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+<%- include('partials/navbar') %>
+
+<%
+    const isStaff = userProfile.campusId && userProfile.campusId.toUpperCase().startsWith('E');
+    const role = isStaff ? 'Staff' : 'Student';
+%>
+
+<div class="profile-layout-container">
+
+    <!-- SIDEBAR -->
+    <aside class="profile-sidebar-card">
+        <div class="profile-sidebar-cover"></div>
+
+        <div class="profile-avatar">
+            <%= userProfile.fullName ? userProfile.fullName.charAt(0).toUpperCase() : 'U' %>
+        </div>
+
+        <h1 class="profile-name"><%= userProfile.fullName || 'Unknown' %></h1>
+        <div class="profile-badge"><%= role %></div>
+
+        <div class="profile-contact-list">
+            <div class="profile-contact-item">
+                <%= userProfile.campusId.toUpperCase() %>@school.edu.sg
+            </div>
+            <div class="profile-contact-item">
+                <%= userProfile.contactMobile || 'N/A' %>
+            </div>
+            <div class="profile-contact-item">
+                ID: <%= userProfile.campusId || 'N/A' %>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="profile-main">
+
+        <div class="profile-tabs-container">
+            <button class="profile-tab-btn active" onclick="switchTab(event,'academic')">Academic Profile</button>
+            <button class="profile-tab-btn" onclick="switchTab(event,'contact')">Contact Details</button>
+            <button class="profile-tab-btn" onclick="switchTab(event,'security')">Security</button>
+        </div>
+
+        <!-- Academic Profile Tab -->
+        <div id="tab-academic" class="profile-tab-content active">
+            <!-- Institution Information -->
+            <div class="profile-content-card">
+                <div class="profile-section-header">Institution Information</div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Student/Staff ID</div>
+                    <div class="profile-value"><%= userProfile.campusId || 'N/A' %></div>
+                </div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Name</div>
+                    <div class="profile-value"><%= userProfile.fullName || 'N/A' %></div>
+                </div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Programme</div>
+                    <div class="profile-value"><%= userProfile.course || 'N/A' %></div>
+                </div>
+                <div class="profile-data-row">
+                    <div class="profile-label">School</div>
+                    <div class="profile-value"><%= userProfile.school || 'N/A' %></div>
+                </div>
+            </div>
+
+            <!-- Personal Particulars -->
+            <div class="profile-content-card">
+                <div class="profile-section-header">Personal Particulars</div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Date of Birth</div>
+                    <div class="profile-value"><%= userProfile.dob || 'N/A' %></div>
+                </div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Sex</div>
+                    <div class="profile-value"><%= userProfile.sex || 'N/A' %></div>
+                </div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Citizenship</div>
+                    <div class="profile-value"><%= userProfile.nationality || 'N/A' %></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Details Tab -->
+        <div id="tab-contact" class="profile-tab-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button type="button" id="editContactBtn" onclick="toggleContactEdit()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; color: #64748b; font-weight: 500;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    Edit
+                </button>
+            </div>
+            <form action="/profile/update-contact" method="POST" id="contactForm">
+                <!-- Contact Numbers -->
+                <div class="profile-content-card">
+                    <div class="profile-section-header">Contact Numbers</div>
+                    <div class="profile-data-row">
+                        <div class="profile-label">Home Number</div>
+                        <div class="profile-value">
+                            <span class="contact-display"><%= userProfile.contactHome || 'Not provided' %></span>
+                            <input type="text" name="contactHome" value="<%= userProfile.contactHome || '' %>" class="form-input contact-input" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; display: none;">
+                        </div>
+                    </div>
+                    <div class="profile-data-row">
+                        <div class="profile-label">Mobile Number</div>
+                        <div class="profile-value">
+                            <span class="contact-display"><%= userProfile.contactMobile || 'Not provided' %></span>
+                            <input type="text" name="contactMobile" value="<%= userProfile.contactMobile || '' %>" class="form-input contact-input" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Addresses -->
+                <div class="profile-content-card">
+                    <div class="profile-section-header">Email Addresses</div>
+                    <div class="profile-data-row">
+                        <div class="profile-label">Campus Email</div>
+                        <div class="profile-value"><%= userProfile.campusId.toUpperCase() %>@school.edu.sg</div>
+                    </div>
+                    <div class="profile-data-row">
+                        <div class="profile-label">Personal Email</div>
+                        <div class="profile-value">
+                            <span class="contact-display"><%= userProfile.personalEmail || 'Not provided' %></span>
+                            <input type="email" name="personalEmail" value="<%= userProfile.personalEmail || '' %>" class="form-input contact-input" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registered Address -->
+                <div class="profile-content-card">
+                    <div class="profile-section-header">Registered Address</div>
+                    <div class="profile-data-row">
+                        <div class="profile-label">Address</div>
+                        <div class="profile-value">
+                            <span class="contact-display"><%= userProfile.address || 'Not provided' %></span>
+                            <input type="text" name="address" value="<%= userProfile.address || '' %>" class="form-input contact-input" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="contactActionButtons" style="display: none; gap: 10px; margin-top: 20px;">
+                    <button type="submit" style="background-color: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Save Changes</button>
+                    <button type="button" onclick="toggleContactEdit()" style="background-color: transparent; color: #64748b; padding: 10px 20px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-weight: 500;">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="tab-security" class="profile-tab-content">
+            <!-- Account Security -->
+            <div class="profile-content-card">
+                <div class="profile-section-header">Account Security</div>
+                <div class="profile-data-row">
+                    <div class="profile-label">Security Question</div>
+                    <div class="profile-value"><%= userProfile.securityQuestion || 'N/A' %></div>
+                </div>
+            </div>
+
+            <!-- Active Recovery Key -->
+            <div class="profile-content-card">
+                <div class="profile-section-header">Active Recovery Key</div>
+                <div style="padding: 16px 24px;">
+                    <div class="recovery-key-wrapper">
+                        <span id="profile-key-text">CP-**********</span>
+                        <button
+                            type="button"
+                            onclick="handleProfileKeyToggle()"
+                            id="profile-toggle-btn"
+                            data-real-key="<%= userProfile.recoveryKey || '' %>">
+                            Reveal Key
+                        </button>
+                    </div>
+                    <form action="/profile/regenerate-key" method="POST" style="margin: 16px 0 0 0;">
+                        <button class="btn-danger" type="submit">Regenerate Recovery Key</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+function switchTab(event, tabId) {
+    document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.profile-tab-btn').forEach(b => b.classList.remove('active'));
+
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+function handleProfileKeyToggle() {
+    const keyLabel = document.getElementById('profile-key-text');
+    const btn = document.getElementById('profile-toggle-btn');
+
+    const real = btn.getAttribute('data-real-key');
+    const mask = 'CP-**********';
+
+    if (keyLabel.innerText === mask) {
+        keyLabel.innerText = real || mask;
+        btn.innerText = 'Hide Key';
+    } else {
+        keyLabel.innerText = mask;
+        btn.innerText = 'Reveal Key';
+    }
+}
+
+// --- Contact Details Toggle Logic ---
+// Toggles the Contact Details form between read-only display and edit mode
+function toggleContactEdit() {
+    const displays = document.querySelectorAll('.contact-display');
+    const inputs = document.querySelectorAll('.contact-input');
+    const actionButtons = document.getElementById('contactActionButtons');
+    const editBtn = document.getElementById('editContactBtn');
+
+    // Determine current state based on action buttons visibility
+    const isEditing = actionButtons.style.display !== 'none';
+
+    if (isEditing) {
+        // Switch to Read-Only Mode
+        displays.forEach(el => el.style.display = 'block');
+        inputs.forEach(el => el.style.display = 'none');
+        actionButtons.style.display = 'none';
+        editBtn.style.display = 'flex';
+        
+        // Reset form to clear unsaved changes
+        const form = document.getElementById('contactForm');
+        if (form) form.reset();
+    } else {
+        // Switch to Edit Mode
+        displays.forEach(el => el.style.display = 'none');
+        inputs.forEach(el => el.style.display = 'block');
+        actionButtons.style.display = 'flex';
+        editBtn.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab) {
+        const btn = document.querySelector(`.profile-tab-btn[onclick*="${tab}"]`);
+        if (btn) {
+            btn.click();
+        }
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,191 +1,1144 @@
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const dns = require('node:dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 require('dotenv').config();
 
 const express = require('express');
-const session = require('express-session');
 const mongoose = require('mongoose');
-const Feedback = require('./models/Feedback');
-const Ticket = require('./models/Ticket');
+
+const User = require('./models/User');
+const Question = require('./models/Question');
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
-// Tell Express to use EJS as the templating engine
 app.set('view engine', 'ejs');
-
-// Parse form submissions (application/x-www-form-urlencoded)
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
-
-// ============================================================================
-// SESSION SETUP — real sessions via express-session. If your teammate's login
-// system already sets this up elsewhere, don't duplicate it here — there
-// should only be ONE app.use(session(...)) in the merged app.
-// Everything below only depends on `req.session.user` existing as
-// { id, name, role }, set by the /login route after checking credentials —
-// role must be exactly 'student', 'staff', or 'admin'.
-// ============================================================================
+app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'campus-portal-dev-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 hour login
+  secret: process.env.SESSIONSECRET || 'campus-portal-secret',
+  resave: false,
+  saveUninitialized: false
 }));
 
-// Makes the logged-in user (or null) available in every EJS view as currentUser
-app.use((req, res, next) => {
-    res.locals.currentUser = (req.session && req.session.user) || null;
-    next();
-});
 
-// Blocks anyone who isn't logged in
-function requireLogin(req, res, next) {
-    if (!req.session || !req.session.user) {
-        return res.status(401).render('feedback', {
-            feedbackList: [],
-            tickets: [],
-            authError: 'You must be logged in to view this page.'
-        });
-    }
-    next();
-}
 
-// Blocks logged-in users whose role isn't in the allowed list
-function requireRole(...roles) {
-    return (req, res, next) => {
-        if (!req.session || !req.session.user || !roles.includes(req.session.user.role)) {
-            return res.status(403).send('You do not have permission to do that.');
-        }
-        next();
-    };
-}
-
-// Which team a ticket type gets routed to by default. Admins can override
-// this per-ticket, so it's a *suggestion*, not the final word.
-const TICKET_ROUTES = {
-    IT: 'IT Helpdesk',
-    Facility: 'Facilities Team',
-    Security: 'Campus Security',
-    Academic: 'Academic Affairs Office'
+const academicModules = {
+  "School of Infocomm": [
+    "OS",
+    "Cloud Computing",
+    "Software Application Development",
+    "DevOps Essentials",
+    "Intelligent Networks",
+    "Linux Administration"
+  ],
+  "School of Business": [
+    "Business Analytics",
+    "Financial Accounting",
+    "Marketing",
+    "Business Law"
+  ],
+  "School of Engineering": [
+    "Engineering Mathematics",
+    "Electronics",
+    "CAD",
+    "Programming for Engineers"
+  ],
+  "School of Hospitality": [
+    "Hospitality Operations",
+    "Tourism",
+    "Food & Beverage Management"
+  ]
 };
 
-// Full list of departments an admin can push a ticket to, regardless of type.
-const DEPARTMENTS = Object.values(TICKET_ROUTES);
+const generalTopics = [
+  "Timetable",
+  "WiFi",
+  "Library",
+  "Student Services",
+  "Facilities",
+  "Internship",
+  "Scholarships",
+  "Others"
+];
 
-// Maps priority labels to a sort weight so High always appears first in Mongo queries
-const PRIORITY_WEIGHT = { High: 0, Medium: 1, Low: 2 };
+function normalizeId(id) {
+  return (id || '').trim().toUpperCase();
+}
 
-// When a user visits the root URL ('/'), render the index.ejs file
-app.get('/', (req, res) => {
-    res.render('index');
-});
+function isOwner(req, ownerId) {
+  return req.session.user && ownerId && String(ownerId) === String(req.session.user.id);
+}
 
-// Feedback & ticketing hub — must be logged in to view.
-// Feedback itself is staff/admin-only; students submit blind and never see
-// the list (that's what keeps it meaningfully anonymous, not just untitled).
-app.get('/feedback', requireLogin, async (req, res) => {
-    try {
-        const canViewFeedback = ['staff', 'admin'].includes(req.session.user.role);
+function requireLogin(req, res, next) {
+  if (req.session.user) return next();
+  res.redirect('/login');
+}
 
-        const [feedbackList, tickets] = await Promise.all([
-            canViewFeedback ? Feedback.find().sort({ createdAt: -1 }) : Promise.resolve([]),
-            Ticket.find().sort({ priorityWeight: 1, createdAt: -1 })
-        ]);
+function requireAdmin(req, res, next) {
+  if (req.session.user && req.session.user.role === 'Admin') return next();
+  return res.status(403).send('Forbidden: Admins Only');
+}
 
-        res.render('feedback', {
-            feedbackList,
-            canViewFeedback,
-            tickets,
-            ticketTypes: Object.keys(TICKET_ROUTES),
-            departments: DEPARTMENTS
-        });
-    } catch (err) {
-        console.error('Error loading /feedback:', err);
-        res.status(500).send('Something went wrong loading the feedback page.');
+function getRelativeTime(dateString) {
+  const now = new Date();
+  const postedDate = new Date(dateString);
+  const diffMs = now - postedDate;
+  const minute = 1000 * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+
+  if (diffMs < minute) return 'Posted Just Now';
+  if (diffMs < hour) {
+    const mins = Math.floor(diffMs / minute);
+    return `Posted ${mins} min${mins > 1 ? 's' : ''} ago`;
+  }
+  if (diffMs < day) {
+    const hours = Math.floor(diffMs / hour);
+    return `Posted ${hours} hour${hours > 1 ? 's' : ''} ago`;
+  }
+  if (diffMs < day * 2) return 'Posted Yesterday';
+
+  const days = Math.floor(diffMs / day);
+  return `Posted ${days} days ago`;
+}
+
+function prepareQuestionsWithTime(data) {
+  return data.map(question => ({
+    ...question.toObject(),
+    relativeTime: getRelativeTime(question.createdAt),
+    replies: question.replies.map(reply => ({
+      ...reply.toObject(),
+      relativeTime: getRelativeTime(reply.createdAt)
+    }))
+  }));
+}
+
+async function getForumStats() {
+  const totalQuestions = await Question.countDocuments();
+  const totalRepliesAgg = await Question.aggregate([
+    { $project: { replyCount: { $size: '$replies' } } },
+    { $group: { _id: null, total: { $sum: '$replyCount' } } }
+  ]);
+  const totalModules = await Question.distinct('module');
+
+  return {
+    totalQuestions,
+    totalReplies: totalRepliesAgg[0]?.total || 0,
+    totalModules: totalModules.length
+  };
+}
+
+app.use(async (req, res, next) => {
+  res.locals.user = req.session.user || null;
+  res.locals.currentPath = req.path;
+  res.locals.academicModules = academicModules;
+  res.locals.generalTopics = generalTopics;
+
+  try {
+    if (req.session.user?.id) {
+      const liveUser = await User.findById(req.session.user.id).select('themePreference role fullName campusId');
+      if (liveUser) {
+        req.session.user.role = liveUser.role;
+        req.session.user.fullName = liveUser.fullName;
+        req.session.user.campusId = liveUser.campusId;
+        req.session.user.themePreference = liveUser.themePreference || 'light';
+        res.locals.themePreference = liveUser.themePreference || 'light';
+      } else {
+        res.locals.themePreference = 'light';
+      }
+    } else {
+      res.locals.themePreference = 'light';
     }
+    } catch (e) {
+    res.locals.themePreference = req.session.user?.themePreference || 'light';
+  }
+
+  next();
 });
 
-// Handle student feedback submissions — students only, and always anonymous
-app.post('/feedback/student', requireLogin, requireRole('student'), async (req, res) => {
-    try {
-        const { category, message } = req.body;
 
-        if (message && message.trim()) {
-            await Feedback.create({
-                category: category || 'General',
-                message: message.trim(),
-                date: new Date().toLocaleDateString()
-                // Deliberately no name/id/role stored, so feedback stays anonymous
-                // even though we know internally that only a logged-in student
-                // could have submitted it.
-            });
-        }
 
-        res.redirect('/feedback#feedback-panel');
-    } catch (err) {
-        console.error('Error saving feedback:', err);
-        res.status(500).send('Could not save your feedback. Please try again.');
-    }
+
+
+// === REGISTRATION ROUTES ===
+app.get('/register', (req, res) => {
+    res.render('register', { error: null, fullName: '', campusId: '', role: '', securityQuestion: '', securityAnswer: '' });
 });
 
-// Handle facility/IT/etc. ticket submissions — any logged-in student or staff
-app.post('/feedback/ticket', requireLogin, requireRole('student', 'staff'), async (req, res) => {
-    try {
-        const { title, type, location, priority, description } = req.body;
-        const resolvedType = TICKET_ROUTES.hasOwnProperty(type) ? type : 'Facility';
-        const resolvedPriority = PRIORITY_WEIGHT.hasOwnProperty(priority) ? priority : 'Medium';
-
-        if (title && title.trim() && description && description.trim()) {
-            await Ticket.create({
-                title: title.trim(),
-                type: resolvedType,
-                assignedTo: TICKET_ROUTES[resolvedType], // auto-suggested; admin can override below
-                overridden: false,
-                location: (location && location.trim()) || 'Unspecified',
-                priority: resolvedPriority,
-                priorityWeight: PRIORITY_WEIGHT[resolvedPriority],
-                status: 'Open',
-                description: description.trim(),
-                raisedBy: req.session.user.name,
-                raisedByRole: req.session.user.role,
-                date: new Date().toLocaleDateString()
-            });
-        }
-
-        res.redirect('/feedback#ticket-panel');
-    } catch (err) {
-        console.error('Error saving ticket:', err);
-        res.status(500).send('Could not save your ticket. Please try again.');
-    }
-});
-
-// Admin-only: push/reassign a ticket to a different department than the
-// auto-suggested one. This doesn't touch `type`, only where it's routed.
-app.post('/feedback/ticket/:id/assign', requireLogin, requireRole('admin'), async (req, res) => {
-    try {
-        const { assignedTo } = req.body;
-        const ticket = await Ticket.findById(req.params.id);
-
-        if (ticket && DEPARTMENTS.includes(assignedTo)) {
-            ticket.overridden = assignedTo !== TICKET_ROUTES[ticket.type];
-            ticket.assignedTo = assignedTo;
-            await ticket.save();
-        }
-
-        res.redirect('/feedback#ticket-panel');
-    } catch (err) {
-        console.error('Error reassigning ticket:', err);
-        res.status(500).send('Could not reassign this ticket. Please try again.');
-    }
-});
-
-// Connect to MongoDB, then start the server only once the connection is live
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log('Connected to MongoDB');
-        app.listen(PORT, () => {
-            console.log(`Server is running successfully on http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('Failed to connect to MongoDB:', err.message);
-        process.exit(1);
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
     });
+});
+
+
+
+app.post('/register', async (req, res) => {
+    try {
+        // Extract registration fields from request body
+        const { fullName, campusId, password, securityQuestion, securityAnswer, role } = req.body;
+        const cleanId = campusId.trim();
+        const cleanName = fullName.trim();
+
+        // Validate role prefix matches ID pattern (Staff starts with E, Students start with S)
+        if (role === 'Student' && cleanId.startsWith('E')) {
+            return res.render('register', {
+                error: "Role mismatch: 'E' IDs are reserved for Staff.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
+        }
+        if (role === 'Admin' && cleanId.startsWith('S')) {
+            return res.render('register', {
+                error: "Role mismatch: 'S' IDs are reserved for Students.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
+        }
+
+        // 1. Block if already activated
+        const alreadyActive = await User.findOne({ campusId: cleanId, isRegistered: true });
+        if (alreadyActive) {
+            return res.render('register', {
+                error: "This Campus ID has already been registered and activated.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
+        }
+
+        // 2. Find the pre-approved whitelist entry matching ID, Name, AND Role
+        const whitelistUser = await User.findOne({
+            campusId: cleanId,
+            fullName: cleanName,
+            role: role, // Crucial security fix: Enforce role mapping
+            isRegistered: false
+        });
+
+        // 3. Reject if not on the whitelist
+        if (!whitelistUser) {
+            return res.render('register', {
+                error: "Identity verification failed. Your ID and name do not match our campus directory enrollment logs.",
+                fullName: req.body.fullName,
+                campusId: req.body.campusId,
+                role: req.body.role,
+                securityQuestion: req.body.securityQuestion,
+                securityAnswer: req.body.securityAnswer
+            });
+        }
+
+        // 4. Activate the account
+        const salt = await bcrypt.genSalt(10);
+        whitelistUser.password = await bcrypt.hash(password, salt);
+        whitelistUser.securityQuestion = securityQuestion;
+        whitelistUser.securityAnswer = securityAnswer;
+
+        // Generate recovery key (using crypto)
+        const crypto = require('crypto');
+        whitelistUser.recoveryKey = "CP-" + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+        // Flip the activation switch
+        whitelistUser.isRegistered = true;
+        await whitelistUser.save();
+
+        res.redirect('/login');
+
+    } catch (error) {
+        console.error("Registration Error:", error);
+        res.status(500).send("Server Error during registration");
+    }
+});
+
+// === PASSWORD RESET FLOWS ===
+
+app.post('/request-it-reset', async (req, res) => {
+    try {
+        const { campusId } = req.body;
+        if (!campusId) {
+            return res.render('forgot-password', { error: 'Campus ID is required to request an IT reset.', message: null });
+        }
+        
+        // Normalize the ID (trim and uppercase) to match the database exactly
+        const cleanId = campusId.trim().toUpperCase();
+        const user = await User.findOne({ campusId: cleanId });
+        
+        if (!user) {
+            return res.render('forgot-password', { error: 'Invalid Campus ID.', message: null });
+        }
+        
+        user.manualResetRequested = true;
+        await user.save();
+        
+        res.render('forgot-password', { message: 'Request sent to IT Support', error: null });
+    } catch (err) {
+        console.error('Request IT Reset Error:', err);
+        res.render('forgot-password', { error: 'Internal Server Error', message: null });
+    }
+});
+
+
+
+app.get('/force-password-update', (req, res) => {
+    if (!req.session.forceUpdateUserId) {
+        return res.redirect('/login');
+    }
+    res.render('force-password-update');
+});
+
+app.post('/force-password-update', async (req, res) => {
+    try {
+        if (!req.session.forceUpdateUserId) {
+            return res.redirect('/login');
+        }
+        const { newPassword, confirmPassword } = req.body;
+        if (newPassword !== confirmPassword) {
+            return res.status(400).send('Passwords do not match');
+        }
+        const user = await User.findById(req.session.forceUpdateUserId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.mustChangePassword = false;
+        await user.save();
+
+        req.session.forceUpdateUserId = null;
+        res.redirect('/login');
+    } catch (err) {
+        console.error('Force Password Update Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// === PROFILE ROUTES ===
+
+// === ADMIN HELPDESK ROUTES ===
+// Display the admin helpdesk page showing all users
+app.get('/admin/helpdesk', async (req, res) => {
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
+    }
+    try {
+        const users = await User.find({}).sort({ manualResetRequested: -1, createdAt: -1 });
+        const generatedPin = req.session.generatedPin;
+        const generatedPinUser = req.session.generatedPinUser;
+        req.session.generatedPin = null;
+        req.session.generatedPinUser = null;
+        res.render('admin-helpdesk', { users, generatedPin, generatedPinUser });
+    } catch (err) {
+        console.error('Admin Fetch Users Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/admin/reset-user', async (req, res) => {
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
+    }
+    try {
+        const { targetUserId } = req.body;
+        const newPassword = 'Campus123!';
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+        await User.findByIdAndUpdate(targetUserId, {
+            password: hashedPassword,
+            recoveryKey: newKey
+        });
+
+        res.redirect('/admin/helpdesk');
+    } catch (err) {
+        console.error('Admin Reset Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/admin/approve-reset', async (req, res) => {
+    const authorizedRoles = ['Admin', 'Staff'];
+    if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
+        return res.status(403).send('Forbidden: Authorized Personnel Only');
+    }
+    try {
+        const { targetUserId } = req.body;
+        const user = await User.findById(targetUserId);
+        if (!user) return res.status(404).send('User not found');
+
+        const pin = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        user.temporaryPin = pin;
+        user.manualResetRequested = false;
+        user.mustChangePassword = true;
+        await user.save();
+
+        req.session.generatedPin = pin;
+        req.session.generatedPinUser = user.fullName;
+        res.redirect('/admin/helpdesk');
+    } catch (err) {
+        console.error('Approve Reset Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// === FINANCIAL HUB ROUTES ===
+// Display the financial hub for students
+app.get('/financial', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    const user = await User.findById(req.session.user.id);
+    res.render('financial', { userProfile: user });
+});
+
+app.post('/financial/pay', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+    await User.findByIdAndUpdate(req.session.user.id, { 'financials.outstandingBalance': 0 });
+    res.redirect('/financial');
+});
+
+app.post('/financial/add-card', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+
+    // DevOps Security: Never save full card details. Mask all but the last 4 digits.
+    const rawCard = req.body.cardNumber.replace(/\s/g, '');
+    const lastFour = rawCard.slice(-4);
+    const maskedCard = `**** **** **** ${lastFour}`;
+
+    const newPaymentMethod = {
+        type: req.body.cardType,
+        maskedNumber: maskedCard,
+        brand: "VISA / Mastercard"
+    };
+    res.render('index', { profile });
+});
+
+app.post('/financial/remove-card', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    if (req.session.user.role !== 'Student') return res.redirect('/');
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+        $pull: { 'financials.paymentMethods': { maskedNumber: req.body.maskedNumber } }
+    });
+
+    res.redirect('/financial');
+
+});
+
+app.get('/', requireLogin, async (req, res) => {
+  try {
+    const profile = await User.findById(req.session.user.id);
+    res.render('index', { profile });
+  } catch (err) {
+    console.error('Dashboard Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/login', (req, res) => {
+  if (req.session.user) return res.redirect('/');
+  res.render('login', { error: '', resetSuccess: req.query.reset || '', campusId: '' });
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    const { campusId, password } = req.body;
+    const cleanId = normalizeId(campusId);
+
+    const user = await User.findOne({ campusId: cleanId });
+
+    if (!user) {
+      return res.status(401).render('login', {
+        error: 'User not registered.',
+        resetSuccess: '',
+        campusId
+      });
+    }
+
+    if (user.temporaryPin && password === user.temporaryPin) {
+        req.session.forceUpdateUserId = user._id;
+        return res.redirect('/force-password-update');
+    }
+
+    const ok = await bcrypt.compare(password, user.password || '');
+    if (!ok) {
+      return res.status(401).render('login', {
+        error: 'Wrong password.',
+        resetSuccess: '',
+        campusId
+      });
+    }
+
+    req.session.user = {
+      id: user._id.toString(),
+      fullName: user.fullName,
+      campusId: user.campusId,
+      role: user.role,
+      themePreference: user.themePreference || 'light'
+    };
+
+    res.redirect('/');
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/forgot-password', (req, res) => {
+  res.render('forgot-password');
+});
+
+app.post('/forgot-password', async (req, res) => {
+  try {
+    const { campusId, recoveryMethod, recoveryKey, securityAnswer } = req.body;
+    let user = null;
+
+    const cleanId = normalizeId(campusId);
+    const cleanKey = (recoveryKey || '').trim().toUpperCase();
+    const cleanAnswer = (securityAnswer || '').trim().toLowerCase();
+
+    if (recoveryMethod === 'key') {
+      user = await User.findOne({ campusId: cleanId, recoveryKey: cleanKey });
+    } else if (recoveryMethod === 'question') {
+      user = await User.findOne({ campusId: cleanId });
+      if (user && (user.securityAnswer || '').trim().toLowerCase() !== cleanAnswer) {
+        user = null;
+      }
+    } else {
+      user = await User.findOne({
+        campusId: cleanId,
+        $or: [
+          { recoveryKey: cleanKey },
+          { securityAnswer: cleanAnswer }
+        ]
+      });
+    }
+
+    if (user) {
+      req.session.resetUserId = user._id.toString();
+      return res.redirect('/reset-password');
+    }
+
+    res.status(401).render('forgot-password', { error: 'Invalid ID or Recovery Information.' });
+  } catch (err) {
+    console.error('Forgot Password Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/reset-password', (req, res) => {
+  if (!req.session.resetUserId) return res.redirect('/login');
+  res.render('reset-password');
+});
+
+app.post('/reset-password', async (req, res) => {
+  try {
+    if (!req.session.resetUserId) return res.redirect('/login');
+
+    const { newPassword, confirmPassword } = req.body;
+    if (newPassword !== confirmPassword) {
+      return res.status(400).send('Passwords do not match');
+    }
+
+    const user = await User.findById(req.session.resetUserId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    req.session.resetUserId = null;
+    res.redirect('/login?reset=success');
+  } catch (err) {
+    console.error('Reset Password Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/profile', requireLogin, async (req, res) => {
+  try {
+    const userProfile = await User.findById(req.session.user.id);
+    if (!userProfile) {
+      req.session.destroy(() => {});
+      return res.redirect('/login');
+    }
+    res.render('profile', { userProfile });
+  } catch (err) {
+    console.error('Profile Fetch Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/profile/regenerate-key', requireLogin, async (req, res) => {
+  try {
+    const newKey = 'CP-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    await User.findByIdAndUpdate(req.session.user.id, { recoveryKey: newKey });
+    res.redirect('/profile?tab=security');
+  } catch (err) {
+    console.error('Regenerate Key Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/profile/update-contact', requireLogin, async (req, res) => {
+  try {
+    const { contactHome, contactMobile, personalEmail, address } = req.body;
+    await User.findByIdAndUpdate(req.session.user.id, {
+      contactHome,
+      contactMobile,
+      personalEmail,
+      address
+    });
+    res.redirect('/profile?tab=contact');
+  } catch (err) {
+    console.error('Update Contact Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/profile/theme', requireLogin, async (req, res) => {
+  try {
+    const safeTheme = req.body.themePreference === 'dark' ? 'dark' : 'light';
+    await User.findByIdAndUpdate(req.session.user.id, { themePreference: safeTheme });
+    req.session.user.themePreference = safeTheme;
+    res.redirect('/profile');
+  } catch (err) {
+    console.error('Theme Update Error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// === CUSTOM MIDDLEWARE FOR ROOM BOOKINGS ===
+app.use((req, res, next) => {
+    if (req.query && req.query._method) {
+        req.method = req.query._method.toUpperCase();
+    }
+    req.flash = function(type, message) {
+        if (!req.session.flash) req.session.flash = {};
+        req.session.flash[type] = message;
+    };
+    res.locals.success = req.session.flash?.success || '';
+    res.locals.error = req.session.flash?.error || '';
+    req.session.flash = null;
+    next();
+});
+
+// === ROOM BOOKINGS ROUTING ===
+const roomsRouter = require('./routes/rooms');
+app.use('/rooms', requireLogin, roomsRouter);
+
+// Map the specific UI triggers for Students and Staff
+app.get('/room-booking', requireLogin, (req, res) => {
+    res.redirect('/rooms');
+});
+app.get('/booking', requireLogin, (req, res) => {
+    res.redirect('/rooms');
+});
+
+app.get('/forum', requireLogin, async (req, res) => {
+  try {
+    const questions = await Question.find().sort({ createdAt: -1 });
+    const stats = await getForumStats();
+    const preparedQuestions = prepareQuestionsWithTime(questions);
+    const isAdmin = req.session.user.role === 'Admin';
+
+    res.render('forum', {
+    questions: preparedQuestions,
+    totalQuestions: stats.totalQuestions,
+    totalReplies: stats.totalReplies,
+    totalModules: stats.totalModules,
+
+    success: req.query.success || '',
+    error: req.query.error || '',
+
+    user: req.session.user,
+
+    academicModules,
+    generalTopics,
+
+    isAdmin,
+    editReply: null
+});
+
+  } catch (err) {
+    console.error('Forum load error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum', requireLogin, async (req, res) => {
+  try {
+    const { category, school, module, enquiryTopic, title, description } = req.body;
+
+    const payload = {
+      category: category.trim(),
+      title: title.trim(),
+      description: description.trim(),
+      userId: req.session.user.id,
+      fullName: req.session.user.fullName,
+      campusId: req.session.user.campusId
+    };
+
+    if (category === 'Academic Modules') {
+      payload.school = (school || '').trim();
+      payload.module = (module || '').trim();
+    } else {
+      payload.enquiryTopic = (enquiryTopic || '').trim();
+      payload.module = (enquiryTopic || '').trim();
+    }
+
+    await Question.create(payload);
+    res.redirect('/forum?success=Question%20posted%20successfully');
+  } catch (err) {
+    console.error('Add question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/:id', requireLogin, async (req, res) => {
+  try {
+    const { reply } = req.body;
+    const questionId = req.params.id;
+
+    if (reply.trim() !== '') {
+      await Question.findByIdAndUpdate(questionId, {
+        $push: {
+          replies: {
+            userId: req.session.user.id,
+            fullName: req.session.user.fullName,
+            campusId: req.session.user.campusId,
+            text: reply.trim(),
+            helpful: 0,
+            helpfulBy: []
+          }
+        }
+      });
+    }
+
+    res.redirect('/forum?success=Reply%20posted%20successfully');
+  } catch (err) {
+    console.error('Reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    const questions = await Question.find().sort({ createdAt: -1 });
+    const stats = await getForumStats();
+    const preparedQuestions = prepareQuestionsWithTime(questions);
+
+    res.render('forum', {
+      questions: preparedQuestions,
+      totalQuestions: stats.totalQuestions,
+      totalReplies: stats.totalReplies,
+      totalModules: stats.totalModules,
+      success: '',
+      isAdmin,
+      editReply: { questionId, replyIndex: Number(replyIndex), text: reply.text }
+    });
+  } catch (err) {
+    console.error('Edit reply page error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const { replyText } = req.body;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    question.replies[replyIndex].text = replyText.trim();
+    await question.save();
+
+    res.redirect('/forum?success=Reply%20updated%20successfully');
+  } catch (err) {
+    console.error('Edit reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/delete/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    question.replies.splice(Number(replyIndex), 1);
+    await question.save();
+
+    res.redirect('/forum?success=Reply%20deleted%20successfully');
+  } catch (err) {
+    console.error('Delete reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/helpful/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const uid = String(req.session.user.id);
+    const ownerId = String(reply.userId);
+
+    if (uid === ownerId) {
+      return res.redirect('/forum?error=cannot-help-own-reply');
+    }
+
+    reply.helpfulBy = Array.isArray(reply.helpfulBy) ? reply.helpfulBy : [];
+
+    if (reply.helpfulBy.includes(uid)) {
+      reply.helpfulBy = reply.helpfulBy.filter(id => id !== uid);
+    } else {
+      reply.helpfulBy.push(uid);
+    }
+
+    reply.helpful = reply.helpfulBy.length;
+    await question.save();
+
+    res.redirect('/forum?success=helpful-updated');
+  } catch (err) {
+    console.error('Helpful toggle error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/solved/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    await Question.findByIdAndUpdate(req.params.id, { solved: true });
+    res.redirect('/forum?success=Question%20marked%20as%20solved');
+  } catch (err) {
+    console.error('Solved error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/delete/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    if (req.session.user.role !== 'Admin' && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    await Question.findByIdAndDelete(req.params.id);
+    res.redirect('/forum?success=Question%20deleted%20successfully');
+  } catch (err) {
+    console.error('Delete question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/forum/edit/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    res.render('edit', { question });
+  } catch (err) {
+    console.error('Edit page error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/edit/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    const { category, school, module, enquiryTopic, title, description } = req.body;
+    const update = {
+      category: category.trim(),
+      title: title.trim(),
+      description: description.trim()
+    };
+
+    if (category === 'Academic Modules') {
+      update.school = (school || '').trim();
+      update.module = (module || '').trim();
+      update.enquiryTopic = '';
+    } else {
+      update.school = '';
+      update.enquiryTopic = (enquiryTopic || '').trim();
+      update.module = (enquiryTopic || '').trim();
+    }
+
+    await Question.findByIdAndUpdate(req.params.id, update);
+    res.redirect('/forum?success=Question%20updated%20successfully');
+  } catch (err) {
+    console.error('Update question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/:id', requireLogin, async (req, res) => {
+  try {
+    const { reply } = req.body;
+    const questionId = req.params.id;
+
+    if (reply.trim() !== '') {
+      await Question.findByIdAndUpdate(questionId, {
+        $push: {
+          replies: {
+            userId: req.session.user.id,
+            fullName: req.session.user.fullName,
+            campusId: req.session.user.campusId,
+            text: reply.trim(),
+            helpful: 0,
+            helpfulBy: []
+          }
+        }
+      });
+    }
+
+    res.redirect('/forum?success=reply-posted');
+  } catch (err) {
+    console.error('Reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    const questions = await Question.find().sort({ createdAt: -1 });
+    const stats = await getForumStats();
+    const preparedQuestions = prepareQuestionsWithTime(questions);
+
+    res.render('forum', {
+      questions: preparedQuestions,
+      totalQuestions: stats.totalQuestions,
+      totalReplies: stats.totalReplies,
+      totalModules: stats.totalModules,
+      success: '',
+      isAdmin,
+      editReply: { questionId, replyIndex: Number(replyIndex), text: reply.text }
+    });
+  } catch (err) {
+    console.error('Edit reply page error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const { replyText } = req.body;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    question.replies[replyIndex].text = replyText.trim();
+    await question.save();
+
+    res.redirect('/forum?success=reply-updated');
+  } catch (err) {
+    console.error('Edit reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/delete/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const isAdmin = req.session.user.role === 'Admin';
+    if (!isAdmin && !isOwner(req, reply.userId)) return res.status(403).send('Forbidden');
+
+    question.replies.splice(Number(replyIndex), 1);
+    await question.save();
+
+    res.redirect('/forum?success=reply-deleted');
+  } catch (err) {
+    console.error('Delete reply error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/helpful/:questionId/:replyIndex', requireLogin, async (req, res) => {
+  try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const uid = req.session.user.id;
+
+    const reply = question.replies[replyIndex];
+    reply.helpfulBy = Array.isArray(reply.helpfulBy) ? reply.helpfulBy : [];
+
+    if (reply.helpfulBy.includes(uid)) {
+      reply.helpfulBy = reply.helpfulBy.filter(id => id !== uid);
+    } else {
+      reply.helpfulBy.push(uid);
+    }
+
+    reply.helpful = reply.helpfulBy.length;
+
+    await Question.updateOne(
+      { _id: questionId },
+      {
+        $set: {
+          [`replies.${replyIndex}.helpfulBy`]: reply.helpfulBy,
+          [`replies.${replyIndex}.helpful`]: reply.helpful
+        }
+      }
+    );
+
+    res.redirect('/forum');
+  } catch (err) {
+    console.error('Helpful toggle error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/solved/:id', requireAdmin, async (req, res) => {
+  try {
+    await Question.findByIdAndUpdate(req.params.id, { solved: true });
+    res.redirect('/forum');
+  } catch (err) {
+    console.error('Solved error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/delete/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    if (req.session.user.role !== 'Admin' && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    await Question.findByIdAndDelete(req.params.id);
+    res.redirect('/forum?success=Question%20deleted%20successfully');
+  } catch (err) {
+    console.error('Delete question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/forum/edit/:id', requireAdmin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+    res.render('edit', { question });
+  } catch (err) {
+    console.error('Edit page error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/edit/:id', requireAdmin, async (req, res) => {
+  try {
+    const { category, school, module, enquiryTopic, title, description } = req.body;
+    const update = {
+      category: category.trim(),
+      title: title.trim(),
+      description: description.trim()
+    };
+
+    if (category === 'Academic Modules') {
+      update.school = (school || '').trim();
+      update.module = (module || '').trim();
+      update.enquiryTopic = '';
+    } else {
+      update.school = '';
+      update.enquiryTopic = (enquiryTopic || '').trim();
+      update.module = (enquiryTopic || '').trim();
+    }
+
+    await Question.findByIdAndUpdate(req.params.id, update);
+    res.redirect('/forum?success=question-updated');
+  } catch (err) {
+    console.error('Update question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/login'));
+});
+
+mongoose.connect(process.env.MONGO_URI, { family: 4 })
+  .then(() => {
+    console.log('MongoDB Connected Successfully to CampusPortal!');
+    app.listen(PORT, () => {
+      console.log(`Server is running successfully on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('MongoDB Connection Error:', err);
+  });
