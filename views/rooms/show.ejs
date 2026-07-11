@@ -47,9 +47,9 @@
                         </div>
                         <% } %>
 
-                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                                 <a href="/rooms" class="btn btn-outline">← Back to All Rooms</a>
-                                <a href="/rooms/my-bookings" class="btn btn-outline">View My Bookings</a>
+                                <a href="/rooms/my-bookings" class="btn btn-primary">Manage Room Bookings</a>
                             </div>
 
                             <div class="two-col">
@@ -112,46 +112,42 @@
                                         </strong></p>
 
                                     <!-- Slot Grid -->
-                                    <% 
-                                        function isSlotPassed(dateStr, timeStr) {
-                                            const now = new Date();
-                                            const slotDate = new Date(dateStr);
-                                            const [hours, minutes] = timeStr.split(':').map(Number);
-                                            slotDate.setHours(hours, minutes, 0, 0);
-                                            return now > slotDate;
+                                    <% function isSlotPassed(dateStr, timeStr) { const now=new Date(); const
+                                        slotDate=new Date(dateStr); const [hours,
+                                        minutes]=timeStr.split(':').map(Number); slotDate.setHours(hours, minutes, 0,
+                                        0); return now> slotDate;
                                         }
-                                    %>
-                                    <div class="slot-grid">
-                                        <% timeSlots.forEach(slot=> { %>
-                                            <% 
-                                                const isBooked=bookedSlots.includes(slot.start); 
-                                                const isPassed=isSlotPassed(selectedDate, slot.start);
-                                            %>
-                                                <% if (isBooked) { %>
-                                                    <div class="slot booked">
-                                                        <span class="slot-time">
-                                                            <%= slot.label %>
-                                                        </span>
-                                                        <span class="slot-status">Booked</span>
-                                                    </div>
-                                                <% } else if (isPassed) { %>
-                                                    <div class="slot" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #94a3b8; cursor: not-allowed; text-decoration: none;">
-                                                        <span class="slot-time">
-                                                            <%= slot.label %>
-                                                        </span>
-                                                        <span class="slot-status">Unavailable</span>
-                                                    </div>
-                                                <% } else { %>
-                                                        <a href="/rooms/<%= room._id %>/book?date=<%= selectedDate %>&start=<%= slot.start %>"
-                                                            class="slot available">
+                                        %>
+                                        <div class="slot-grid">
+                                            <% timeSlots.forEach(slot=> { %>
+                                                <% const isBooked=bookedSlots.includes(slot.start); const
+                                                    isPassed=isSlotPassed(selectedDate, slot.start); %>
+                                                    <% if (isBooked) { %>
+                                                        <div class="slot booked">
                                                             <span class="slot-time">
                                                                 <%= slot.label %>
                                                             </span>
-                                                            <span class="slot-status">Available</span>
-                                                        </a>
-                                                <% } %>
-                                        <% }) %>
-                                    </div>
+                                                            <span class="slot-status">Booked</span>
+                                                        </div>
+                                                        <% } else if (isPassed) { %>
+                                                            <div class="slot"
+                                                                style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #94a3b8; cursor: not-allowed; text-decoration: none;">
+                                                                <span class="slot-time">
+                                                                    <%= slot.label %>
+                                                                </span>
+                                                                <span class="slot-status">Unavailable</span>
+                                                            </div>
+                                                            <% } else { %>
+                                                                <a href="/rooms/<%= room._id %>/book?date=<%= selectedDate %>&start=<%= slot.start %>"
+                                                                    class="slot available">
+                                                                    <span class="slot-time">
+                                                                        <%= slot.label %>
+                                                                    </span>
+                                                                    <span class="slot-status">Available</span>
+                                                                </a>
+                                                                <% } %>
+                                                                    <% }) %>
+                                        </div>
 
 
                                 </section>

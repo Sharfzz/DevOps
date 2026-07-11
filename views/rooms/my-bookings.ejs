@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings – Campus Portal</title>
+    <title>Manage Room Bookings – Campus Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
             <!-- Breadcrumb -->
             <div class="breadcrumb">
                 <a href="/">Home</a> /
-                <span>My Bookings</span>
+                <span>Manage Room Bookings</span>
             </div>
 
             <!-- Flash Messages -->
@@ -35,19 +35,26 @@
                         </div>
                         <% } %>
 
+                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <a href="/" class="btn btn-outline">← Back to Home</a>
+                                <a href="/rooms" class="btn btn-primary">Book a Room</a>
+                            </div>
                             <div class="page-header">
-                                <h2 class="page-title">My Bookings</h2>
+                                <h2 class="page-title">Manage Room Bookings</h2>
                                 <div>
-                                    <button id="cancel-all-btn" class="btn btn-danger" style="<%= bookings.length === 0 ? 'display: none;' : '' %> margin-right: 0.5rem;">Cancel All Bookings</button>
-                                    <a href="/rooms" class="btn btn-outline">Book a Room</a>
+                                    <button id="cancel-all-btn" class="btn btn-danger"
+                                        style="<%= bookings.length === 0 ? 'display: none;' : '' %>">Cancel
+                                        All Bookings</button>
                                 </div>
                             </div>
 
-                            <div class="empty-state" id="empty-state-container" style="<%= bookings.length === 0 ? 'display: flex;' : 'display: none;' %> flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; text-align: center;">
+                            <div class="empty-state" id="empty-state-container"
+                                style="<%= bookings.length === 0 ? 'display: flex;' : 'display: none;' %> flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; text-align: center;">
                                 <p>No rooms booked at the moment</p>
                             </div>
 
-                            <div class="table-wrapper" id="bookings-table-container" style="<%= bookings.length === 0 ? 'display: none;' : '' %>">
+                            <div class="table-wrapper" id="bookings-table-container"
+                                style="<%= bookings.length === 0 ? 'display: none;' : '' %>">
                                 <table class="data-table">
                                     <thead>
                                         <tr>
@@ -61,7 +68,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% bookings.forEach((b, i)=> { 
+                                        <% bookings.forEach((b, i)=> {
                                             const now = Date.now();
                                             const startDateTime = new Date(b.date);
                                             const [startH, startM] = b.startTime.split(':').map(Number);
@@ -74,13 +81,13 @@
                                             let status = 'Upcoming';
                                             let badgeStyle = 'background-color: #e2e8f0; color: #475569;';
                                             if (now >= endDateTime.getTime()) {
-                                                status = 'Over';
-                                                badgeStyle = 'background-color: #f1f5f9; color: #94a3b8;';
+                                            status = 'Over';
+                                            badgeStyle = 'background-color: #f1f5f9; color: #94a3b8;';
                                             } else if (now >= startDateTime.getTime()) {
-                                                status = 'Active';
-                                                badgeStyle = 'background-color: #dcfce7; color: #166534;';
+                                            status = 'Active';
+                                            badgeStyle = 'background-color: #dcfce7; color: #166534;';
                                             }
-                                        %>
+                                            %>
                                             <tr>
                                                 <td class="text-muted">
                                                     <%= i + 1 %>
@@ -89,7 +96,9 @@
                                                         <%= b.room ? b.room.name : 'Unknown Room' %>
                                                     </strong></td>
                                                 <td>
-                                                    <%= ('0' + new Date(b.date).getDate()).slice(-2) + '-' + ('0' + (new Date(b.date).getMonth() + 1)).slice(-2) + '-' + new Date(b.date).getFullYear() %>
+                                                    <%= ('0' + new Date(b.date).getDate()).slice(-2) + '-' + ('0' + (new
+                                                        Date(b.date).getMonth() + 1)).slice(-2) + '-' + new
+                                                        Date(b.date).getFullYear() %>
                                                 </td>
                                                 <td><span class="time-badge time-badge-<%= b._id %>">
                                                         <%= b.startTime %> – <%= b.endTime %>
@@ -98,21 +107,28 @@
                                                     <%= b.purpose %>
                                                 </td>
                                                 <td>
-                                                    <span style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; <%= badgeStyle %>">
+                                                    <span
+                                                        style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; <%= badgeStyle %>">
                                                         <%= status %>
                                                     </span>
                                                 </td>
                                                 <td style="display: flex; gap: 0.5rem; align-items: center;">
-                                                    <% if (status === 'Active' && !b.isExtended) { %>
-                                                        <button class="btn btn-success btn-sm extend-btn" data-id="<%= b._id %>" style="background-color: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">Extend (+1 hr)</button>
-                                                    <% } else if (status === 'Active' && b.isExtended) { %>
-                                                        <button class="btn btn-secondary btn-sm" disabled style="background-color: #94a3b8; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: not-allowed; font-size: 0.875rem;" title="One-time extension already used.">Extended</button>
-                                                    <% } %>
-                                                    <form class="cancel-booking-form" action="/rooms/bookings/<%= b._id %>?_method=DELETE"
-                                                        method="POST" style="margin: 0;">
-                                                        <button class="btn btn-danger btn-sm"
-                                                            type="submit">Cancel</button>
-                                                    </form>
+                                                    <% if (status==='Active' && !b.isExtended) { %>
+                                                        <button class="btn btn-success btn-sm extend-btn"
+                                                            data-id="<%= b._id %>"
+                                                            style="background-color: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">Extend
+                                                            (+1 hr)</button>
+                                                        <% } else if (status==='Active' && b.isExtended) { %>
+                                                            <button class="btn btn-secondary btn-sm" disabled
+                                                                style="background-color: #94a3b8; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: not-allowed; font-size: 0.875rem;"
+                                                                title="One-time extension already used.">Extended</button>
+                                                            <% } %>
+                                                                <form class="cancel-booking-form"
+                                                                    action="/rooms/bookings/<%= b._id %>?_method=DELETE"
+                                                                    method="POST" style="margin: 0;">
+                                                                    <button class="btn btn-danger btn-sm"
+                                                                        type="submit">Cancel</button>
+                                                                </form>
                                                 </td>
                                             </tr>
                                             <% }) %>
@@ -121,96 +137,96 @@
                             </div>
         </main>
 
-    <script>
-        function checkEmptyState() {
-            const tbody = document.querySelector('tbody');
-            if (!tbody || tbody.children.length === 0) {
-                const tableContainer = document.getElementById('bookings-table-container');
-                const cancelAllBtn = document.getElementById('cancel-all-btn');
-                const emptyState = document.getElementById('empty-state-container');
-                
-                if (tableContainer) tableContainer.style.display = 'none';
-                if (cancelAllBtn) cancelAllBtn.style.display = 'none';
-                if (emptyState) {
-                    emptyState.style.display = 'flex';
-                    // Re-apply center styling just in case it doesn't trigger flex defaults natively via style attr
+        <script>
+            function checkEmptyState() {
+                const tbody = document.querySelector('tbody');
+                if (!tbody || tbody.children.length === 0) {
+                    const tableContainer = document.getElementById('bookings-table-container');
+                    const cancelAllBtn = document.getElementById('cancel-all-btn');
+                    const emptyState = document.getElementById('empty-state-container');
+
+                    if (tableContainer) tableContainer.style.display = 'none';
+                    if (cancelAllBtn) cancelAllBtn.style.display = 'none';
+                    if (emptyState) {
+                        emptyState.style.display = 'flex';
+                        // Re-apply center styling just in case it doesn't trigger flex defaults natively via style attr
+                    }
                 }
             }
-        }
 
-        document.querySelectorAll('.cancel-booking-form').forEach(form => {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (!confirm('Cancel this booking?')) return;
-                
-                try {
-                    const response = await fetch(form.action, { method: 'POST' });
-                    if (response.ok) {
-                        form.closest('tr').remove();
-                        checkEmptyState();
-                    } else {
-                        console.error('Failed to cancel booking');
-                    }
-                } catch (error) {
-                    console.error('Error cancelling booking:', error);
-                }
-            });
-        });
+            document.querySelectorAll('.cancel-booking-form').forEach(form => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!confirm('Cancel this booking?')) return;
 
-        const cancelAllBtn = document.getElementById('cancel-all-btn');
-        if (cancelAllBtn) {
-            cancelAllBtn.addEventListener('click', async () => {
-                if (!confirm('Are you sure you want to cancel all your bookings?')) return;
-                
-                try {
-                    const response = await fetch('/rooms/bookings-all/user', { method: 'DELETE' });
-                    if (response.ok) {
-                        const tbody = document.querySelector('tbody');
-                        if (tbody) tbody.innerHTML = '';
-                        checkEmptyState();
-                    } else {
-                        console.error('Failed to cancel all bookings');
-                        alert('Failed to cancel all bookings. Please try again.');
-                    }
-                } catch (error) {
-                    console.error('Error cancelling all bookings:', error);
-                    alert('Error cancelling all bookings.');
-                }
-            });
-        }
-
-        document.querySelectorAll('.extend-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const bookingId = btn.getAttribute('data-id');
-                try {
-                    const response = await fetch(`/rooms/bookings/${bookingId}/extend`, { method: 'PATCH' });
-                    const result = await response.json();
-                    if (response.ok && result.success) {
-                        const timeBadge = document.querySelector(`.time-badge-${bookingId}`);
-                        if (timeBadge) {
-                            const [start] = timeBadge.textContent.split('–').map(s => s.trim());
-                            timeBadge.textContent = `${start} – ${result.newEndTime}`;
+                    try {
+                        const response = await fetch(form.action, { method: 'POST' });
+                        if (response.ok) {
+                            form.closest('tr').remove();
+                            checkEmptyState();
+                        } else {
+                            console.error('Failed to cancel booking');
                         }
-                        
-                        // Transform button to disabled Extended state
-                        btn.textContent = 'Extended';
-                        btn.className = 'btn btn-secondary btn-sm';
-                        btn.style.backgroundColor = '#94a3b8';
-                        btn.style.cursor = 'not-allowed';
-                        btn.disabled = true;
-                        btn.title = 'One-time extension already used.';
-                        
-                        alert('Booking extended by 1 hour (One-time bypass used)!');
-                    } else {
-                        alert(result.message || 'Cannot extend: The room is already booked for the next hour.');
+                    } catch (error) {
+                        console.error('Error cancelling booking:', error);
                     }
-                } catch (error) {
-                    console.error('Error extending booking:', error);
-                    alert('Error extending booking. Please try again.');
-                }
+                });
             });
-        });
-    </script>
+
+            const cancelAllBtn = document.getElementById('cancel-all-btn');
+            if (cancelAllBtn) {
+                cancelAllBtn.addEventListener('click', async () => {
+                    if (!confirm('Are you sure you want to cancel all your bookings?')) return;
+
+                    try {
+                        const response = await fetch('/rooms/bookings-all/user', { method: 'DELETE' });
+                        if (response.ok) {
+                            const tbody = document.querySelector('tbody');
+                            if (tbody) tbody.innerHTML = '';
+                            checkEmptyState();
+                        } else {
+                            console.error('Failed to cancel all bookings');
+                            alert('Failed to cancel all bookings. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error cancelling all bookings:', error);
+                        alert('Error cancelling all bookings.');
+                    }
+                });
+            }
+
+            document.querySelectorAll('.extend-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const bookingId = btn.getAttribute('data-id');
+                    try {
+                        const response = await fetch(`/rooms/bookings/${bookingId}/extend`, { method: 'PATCH' });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            const timeBadge = document.querySelector(`.time-badge-${bookingId}`);
+                            if (timeBadge) {
+                                const [start] = timeBadge.textContent.split('–').map(s => s.trim());
+                                timeBadge.textContent = `${start} – ${result.newEndTime}`;
+                            }
+
+                            // Transform button to disabled Extended state
+                            btn.textContent = 'Extended';
+                            btn.className = 'btn btn-secondary btn-sm';
+                            btn.style.backgroundColor = '#94a3b8';
+                            btn.style.cursor = 'not-allowed';
+                            btn.disabled = true;
+                            btn.title = 'One-time extension already used.';
+
+                            alert('Booking extended by 1 hour (One-time bypass used)!');
+                        } else {
+                            alert(result.message || 'Cannot extend: The room is already booked for the next hour.');
+                        }
+                    } catch (error) {
+                        console.error('Error extending booking:', error);
+                        alert('Error extending booking. Please try again.');
+                    }
+                });
+            });
+        </script>
 </body>
 
 </html>

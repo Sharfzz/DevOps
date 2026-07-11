@@ -87,7 +87,7 @@ router.get('/seed', async (req, res) => {
 // GET /rooms/my-bookings — display user's booking history
 router.get('/my-bookings', async (req, res) => {
   try {
-    const bookings = await Booking.find({ studentId: req.session.user.campusId })
+    const bookings = await Booking.find({ userId: req.session.user.campusId })
       .populate('room')
       .sort({ date: 1, startTime: 1 });
     res.render('rooms/my-bookings', { bookings });
@@ -161,7 +161,7 @@ router.delete('/bookings/:bookingId', async (req, res) => {
       return res.redirect('/rooms');
     }
 
-    if (booking.studentId !== req.session.user.campusId) {
+    if (booking.userId !== req.session.user.campusId) {
       return res.status(403).send('403 Unauthorized');
     }
 
@@ -184,7 +184,7 @@ router.delete('/bookings-all/user', async (req, res) => {
     if (!campusId) {
       return res.status(401).send('401 Unauthorized');
     }
-    await Booking.deleteMany({ studentId: campusId });
+    await Booking.deleteMany({ userId: campusId });
     res.status(200).send('All bookings cancelled successfully');
   } catch (err) {
     console.error(err);
@@ -199,7 +199,7 @@ router.patch('/bookings/:bookingId/extend', async (req, res) => {
     const booking = await Booking.findById(req.params.bookingId);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
 
-    if (booking.studentId !== req.session.user.campusId) {
+    if (booking.userId !== req.session.user.campusId) {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -316,7 +316,7 @@ router.get('/:id/book', async (req, res) => {
     let globalQuota = 5;
     if (req.session.user) {
       const userExistingBookings = await Booking.find({
-        studentId: req.session.user.campusId,
+        userId: req.session.user.campusId,
         date: { $gte: startOfDay, $lte: endOfDay }
       });
       const roomBookingsCount = userExistingBookings.filter(b => b.room.toString() === room._id.toString()).length;
@@ -342,8 +342,8 @@ router.post('/:id/book', async (req, res) => {
     }
 
     const { groupSize, purpose, date, startTime, endTime } = req.body;
-    const studentName = req.session.user.fullName;
-    const studentId = req.session.user.campusId;
+    const userName = req.session.user.fullName;
+    const userId = req.session.user.campusId;
 
     // Validate start < end
     if (startTime >= endTime) {
@@ -387,7 +387,7 @@ router.post('/:id/book', async (req, res) => {
     todayStart.setHours(0, 0, 0, 0);
 
     const futureBookingsForPurpose = await Booking.find({
-      studentId: req.session.user.campusId,
+      userId: req.session.user.campusId,
       purpose: purpose,
       date: { $gte: todayStart }
     });
@@ -404,7 +404,7 @@ router.post('/:id/book', async (req, res) => {
     }
 
     const userExistingBookings = await Booking.find({
-      studentId: req.session.user.campusId,
+      userId: req.session.user.campusId,
       date: { $gte: startOfDay, $lte: endOfDay }
     });
 
@@ -447,8 +447,8 @@ router.post('/:id/book', async (req, res) => {
 
     await Booking.create({
       room: room._id,
-      studentName,
-      studentId,
+      userName,
+      userId,
       groupSize: parseInt(groupSize),
       purpose,
       date: new Date(date + 'T00:00:00'),

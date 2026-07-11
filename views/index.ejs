@@ -27,7 +27,7 @@
             <p>Campus Portal</p>
           </div>
         </div>
-    </main>
+        </main>
 
         <!-- Unified Dashboard Grid -->
         <div style="display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; margin-top: 24px;">
@@ -78,6 +78,10 @@
                     <div class="qa-icon">💬</div>
                     <span class="qa-text">Forum</span>
                   </a>
+                  <a href="/room-booking" class="qa-item staff">
+                    <div class="qa-icon">📅</div>
+                    <span class="qa-text">Room Booking</span>
+                  </a>
                   <a href="/profile" class="qa-item staff">
                     <div class="qa-icon">👤</div>
                     <span class="qa-text">Profile</span>
@@ -88,8 +92,8 @@
                       <span class="qa-text">Student Forum</span>
                     </a>
                     <a href="/room-booking" class="qa-item">
-                        <div class="qa-icon">📅</div>
-                        <span class="qa-text">Room Booking</span>
+                      <div class="qa-icon">📅</div>
+                      <span class="qa-text">Room Booking</span>
                     </a>
                     <a href="/profile" class="qa-item">
                       <div class="qa-icon">👤</div>
@@ -166,17 +170,9 @@
                       <h4>Student Forum</h4>
                       <p>Join campus discussions and announcements</p>
                     </div>
-                    <a href="/forum" class="btn-module"
-                      style="text-decoration: none; display: inline-block;">Open</a>
+                    <a href="/forum" class="btn-module" style="text-decoration: none; display: inline-block;">Open</a>
                   </div>
-                  <div class="module-item">
-                    <div>
-                      <h4>My Bookings</h4>
-                      <p>View and manage your upcoming reservations.</p>
-                    </div>
-                    <a href="/rooms/my-bookings" class="btn-module"
-                      style="text-decoration: none; display: inline-block;">Open</a>
-                  </div>
+
                   <% } %>
 
                     <% if (isStaff) { %>
@@ -197,6 +193,14 @@
                           style="text-decoration: none; display: inline-block;">Open</a>
                       </div>
                       <% } %>
+                        <div class="module-item">
+                          <div>
+                            <h4>View/Manage Room Bookings</h4>
+                            <p>View and manage your upcoming reservations.</p>
+                          </div>
+                          <a href="/rooms/my-bookings" class="btn-module"
+                            style="text-decoration: none; display: inline-block;">Open</a>
+                        </div>
               </div>
             </div>
 
