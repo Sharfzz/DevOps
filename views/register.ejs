@@ -10,158 +10,265 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
     <%- include('partials/navbar') %>
 
-    <div class="split-layout auth-split">
-        <div class="brand-panel">
-            <h1>Campus Identity Access Management</h1>
-            <p>Secure, centralized access to all your campus resources and applications.</p>
-        </div>
+        <style>
+            /* New Split Layout Styles */
+            .split-layout {
+                display: flex;
+                min-height: 85vh;
+            }
 
-        <div class="form-panel">
-            <div class="auth-container">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <h1>Create Account</h1>
-                        <p>Register for access to the Campus Portal</p>
+            .brand-panel {
+                flex: 1;
+                background: linear-gradient(135deg, #1e293b, #312e81);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                padding: 2rem;
+                text-align: center;
+            }
+
+            .brand-panel h1 {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                font-weight: 600;
+            }
+
+            .brand-panel p {
+                font-size: 1.1rem;
+                opacity: 0.9;
+                max-width: 80%;
+                line-height: 1.5;
+            }
+
+            .form-panel {
+                flex: 1;
+                background-color: #f8fafc;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* Override default auth-container */
+            .form-panel .auth-container {
+                min-height: auto;
+                background: transparent;
+                padding: 2rem;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+
+            /* Card Refinements */
+            .form-panel .auth-card {
+                background-color: #ffffff;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+                border: none;
+                width: 100%;
+                max-width: 450px;
+                border-radius: 12px;
+            }
+
+            /* Input & Button Refinements */
+            .form-panel .form-input,
+            .form-panel .form-select {
+                border: 1px solid #cbd5e1;
+                transition: all 0.2s ease;
+            }
+
+            .form-panel .form-input:focus,
+            .form-panel .form-select:focus {
+                outline: none;
+                border-color: #1e293b;
+                box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.1);
+            }
+
+            .form-panel .btn-submit {
+                background-color: #1e293b;
+                color: white;
+                transition: background-color 0.2s ease;
+            }
+
+            .form-panel .btn-submit:hover {
+                background-color: #334155;
+            }
+
+            @media (max-width: 768px) {
+                .split-layout {
+                    flex-direction: column;
+                }
+
+                .brand-panel {
+                    min-height: 250px;
+                }
+            }
+        </style>
+        <div class="split-layout">
+            <div class="brand-panel">
+                <h1>Campus Identity & Access Management</h1>
+                <p>Secure, centralized access to all your campus resources and applications.</p>
+            </div>
+            <div class="form-panel">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <h1>Create Account</h1>
+                            <p>Register for access to the Campus Portal</p>
+                        </div>
+
+                        <% if (typeof error !=='undefined' && error) { %>
+                            <div id="form-error-msg"
+                                style="color: red; margin-bottom: 15px; text-align: center; font-weight: 500;">
+                                <%= error %>
+                            </div>
+                            <% } %>
+                                <form id="register-form" action="/register" method="POST">
+                                    <div class="form-group">
+                                        <label for="fullName" class="form-label">Full Name</label>
+                                        <input type="text" id="fullName" name="fullName" class="form-input"
+                                            placeholder="Enter your full name"
+                                            value="<%= typeof fullName !== 'undefined' ? fullName : '' %>" required>
+                                        <div id="fullNameError" class="error-msg"
+                                            style="color: red; font-size: 0.8rem; margin-top: 5px;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="campusId" class="form-label">Student/Staff ID</label>
+                                        <input type="text" id="campusId" name="campusId" class="form-input"
+                                            placeholder="Enter your ID"
+                                            value="<%= typeof campusId !== 'undefined' ? campusId : '' %>" required>
+                                        <div id="campusIdError" class="error-msg"
+                                            style="color: red; font-size: 0.8rem; margin-top: 5px;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="securityQuestion" class="form-label">Security Question</label>
+                                        <select id="securityQuestion" name="securityQuestion" class="form-select"
+                                            required>
+                                            <option value="" disabled <%=(typeof securityQuestion==='undefined' ||
+                                                !securityQuestion) ? 'selected' : '' %>>Select a security question
+                                            </option>
+                                            <option value="First pet's name" <%=(typeof securityQuestion !=='undefined'
+                                                && securityQuestion==="First pet's name" ) ? 'selected' : '' %>>First
+                                                pet's name
+                                            </option>
+                                            <option value="Primary school attended" <%=(typeof securityQuestion
+                                                !=='undefined' && securityQuestion==="Primary school attended" )
+                                                ? 'selected' : '' %>>Primary
+                                                school attended</option>
+                                            <option value="Mother's maiden name" <%=(typeof securityQuestion
+                                                !=='undefined' && securityQuestion==="Mother's maiden name" )
+                                                ? 'selected' : '' %>>Mother's maiden
+                                                name</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="securityAnswer" class="form-label">Security Answer</label>
+                                        <input type="text" id="securityAnswer" name="securityAnswer" class="form-input"
+                                            placeholder="Your Answer"
+                                            value="<%= typeof securityAnswer !== 'undefined' ? securityAnswer : '' %>"
+                                            required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="role" class="form-label">Role</label>
+                                        <select id="role" name="role" class="form-select" required>
+                                            <option value="" disabled <%=(typeof role==='undefined' || !role)
+                                                ? 'selected' : '' %>>Select your role</option>
+                                            <option value="Student" <%=(typeof role !=='undefined' && role==='Student' )
+                                                ? 'selected' : '' %>>Student</option>
+                                            <option value="Admin" <%=(typeof role !=='undefined' && role==='Admin' )
+                                                ? 'selected' : '' %>>School Staff (Admin)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="password" class="form-label">Password</label>
+                                        <input type="password" id="password" name="password" class="form-input"
+                                            placeholder="Create a password" required>
+                                        <button type="button" class="password-toggle"
+                                            onclick="togglePassword('password', 'eye-icon-1')">
+                                            <svg id="eye-icon-1" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                        <input type="password" id="confirmPassword" name="confirmPassword"
+                                            class="form-input" placeholder="Confirm your password" required>
+                                        <button type="button" class="password-toggle"
+                                            onclick="togglePassword('confirmPassword', 'eye-icon-2')">
+                                            <svg id="eye-icon-2" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </button>
+                                        <div id="passwordError" class="error-msg"
+                                            style="color: red; font-size: 0.8rem; margin-top: 5px;"></div>
+                                    </div>
+
+                                    <div class="form-options">
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" id="terms" name="terms" required>
+                                            <label for="terms">I agree to the <a href="#" class="text-link">campus terms
+                                                    of
+                                                    use</a></label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" id="submitBtn" class="btn-submit">Create Account</button>
+
+                                    <div class="auth-footer">
+                                        Already have an account? <a href="/login" class="text-link">Sign in</a>
+                                    </div>
+                                </form>
                     </div>
-
-                    <% if (typeof error !== 'undefined' && error) { %>
-                        <div class="form-error" id="form-error-msg"><%= error %></div>
-                    <% } else { %>
-                        <div class="form-error" id="form-error-msg" style="display:none;"></div>
-                    <% } %>
-
-                    <form id="register-form" action="/register" method="POST">
-                        <div class="form-group">
-                            <label for="fullName" class="form-label">Full Name</label>
-                            <input
-                                type="text"
-                                id="fullName"
-                                name="fullName"
-                                class="form-input"
-                                value="<%= typeof fullName !== 'undefined' ? fullName : '' %>"
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="campusId" class="form-label">Student/Staff ID</label>
-                            <input
-                                type="text"
-                                id="campusId"
-                                name="campusId"
-                                class="form-input"
-                                value="<%= typeof campusId !== 'undefined' ? campusId : '' %>"
-                                placeholder="e.g. S1234567 or E1234567"
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="securityQuestion" class="form-label">Security Question</label>
-                            <select id="securityQuestion" name="securityQuestion" class="form-select" required>
-                                <option value="" disabled <%= !securityQuestion ? 'selected' : '' %>>Select a security question</option>
-                                <option value="First pet's name" <%= securityQuestion === "First pet's name" ? 'selected' : '' %>>First pet's name</option>
-                                <option value="Primary school attended" <%= securityQuestion === "Primary school attended" ? 'selected' : '' %>>Primary school attended</option>
-                                <option value="Mother's maiden name" <%= securityQuestion === "Mother's maiden name" ? 'selected' : '' %>>Mother's maiden name</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="securityAnswer" class="form-label">Security Answer</label>
-                            <input
-                                type="text"
-                                id="securityAnswer"
-                                name="securityAnswer"
-                                class="form-input"
-                                value="<%= typeof securityAnswer !== 'undefined' ? securityAnswer : '' %>"
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="role" class="form-label">Role</label>
-                            <select id="role" name="role" class="form-select" required>
-                                <option value="" disabled <%= !role ? 'selected' : '' %>>Select your role</option>
-                                <option value="Student" <%= role === 'Student' ? 'selected' : '' %>>Student</option>
-                                <option value="Admin" <%= role === 'Admin' ? 'selected' : '' %>>School Staff / Admin</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password" class="form-label">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                class="form-input"
-                                required
-                            >
-                            <button type="button" class="password-toggle" onclick="togglePassword('password', 'eye-icon-1')">
-                                <svg id="eye-icon-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                class="form-input"
-                                required
-                            >
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', 'eye-icon-2')">
-                                <svg id="eye-icon-2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="form-options">
-                            <label class="checkbox-group">
-                                <input type="checkbox" id="terms" name="terms" required>
-                                <span>I agree to the <a href="#" class="text-link">campus terms of use</a></span>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn-submit">Create Account</button>
-
-                        <div class="auth-footer">
-                            Already have an account? <a href="/login" class="text-link">Sign in</a>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        function togglePassword(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
+        <script>
+            function togglePassword(inputId, iconId) {
+                const input = document.getElementById(inputId);
+                const icon = document.getElementById(iconId);
 
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = `
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                    <line x1="1" y1="1" x2="23" y2="23"></line>
-                `;
-            } else {
-                input.type = 'password';
-                icon.innerHTML = `
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                `;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+                } else {
+                    input.type = 'password';
+                    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                }
             }
-        }
-    </script>
+
+
+            document.getElementById('register-form').addEventListener('submit', function (e) {
+                const role = document.querySelector('select[name="role"]').value;
+                const id = document.querySelector('input[name="campusId"]').value.trim().toUpperCase();
+                const errorDiv = document.getElementById('form-error-msg');
+
+                if (role === 'Student' && id.startsWith('E')) {
+                    e.preventDefault(); // Stops the page reload instantly
+                    if (errorDiv) { errorDiv.innerText = "Role mismatch: 'E' IDs are reserved for Staff."; errorDiv.style.display = 'block'; }
+                } else if (role === 'Admin' && id.startsWith('S')) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.innerText = "Role mismatch: 'S' IDs are reserved for Students."; errorDiv.style.display = 'block'; }
+                }
+            });
+        </script>
 </body>
 
 </html>
