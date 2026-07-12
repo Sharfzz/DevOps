@@ -427,7 +427,12 @@ app.post('/financial/add-card', async (req, res) => {
         maskedNumber: maskedCard,
         brand: "VISA / Mastercard"
     };
-    res.render('index', { profile });
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+        $push: { 'financials.paymentMethods': newPaymentMethod }
+    });
+
+    res.redirect('/financial');
 });
 
 app.post('/financial/remove-card', async (req, res) => {
