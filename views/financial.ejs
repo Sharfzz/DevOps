@@ -201,10 +201,6 @@
                         <div style="color: #ef4444; font-size: 13px; font-weight: 600; margin-bottom: 8px;">No saved cards found.</div>
                     <% } %>
 
-                    <label style="display: flex; align-items: center; gap: 10px; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <input type="radio" name="paymentType" value="paynow" <%= (!userProfile.financials.paymentMethods || userProfile.financials.paymentMethods.length === 0) ? 'checked' : '' %>> 
-                        <span style="font-weight: 600; color: #0f172a;">PayNow (QR)</span>
-                    </label>
 
                 </div>
                 <button type="submit" class="sis-btn-primary">Confirm Payment</button>
