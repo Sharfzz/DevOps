@@ -533,12 +533,17 @@ app.post('/financial/add-card', async (req, res) => {
   const lastFour = rawCard.slice(-4);
   const maskedCard = `**** **** **** ${lastFour}`;
 
-  const newPaymentMethod = {
-    type: req.body.cardType,
-    maskedNumber: maskedCard,
-    brand: "VISA / Mastercard"
-  };
-  res.render('index', { profile: newPaymentMethod });
+    const newPaymentMethod = {
+        type: req.body.cardType,
+        maskedNumber: maskedCard,
+        brand: "VISA / Mastercard"
+    };
+
+    await User.findByIdAndUpdate(req.session.user.id, {
+        $push: { 'financials.paymentMethods': newPaymentMethod }
+    });
+
+    res.redirect('/financial');
 });
 
 app.post('/financial/remove-card', async (req, res) => {

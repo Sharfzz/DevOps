@@ -83,6 +83,10 @@
                     <div class="qa-icon">📝</div>
                     <span class="qa-text">Feedback</span>
                   </a>
+                  <a href="/room-booking" class="qa-item staff">
+                    <div class="qa-icon">📅</div>
+                    <span class="qa-text">Room Booking</span>
+                  </a>
                   <a href="/profile" class="qa-item staff">
                     <div class="qa-icon">👤</div>
                     <span class="qa-text">Profile</span>
@@ -93,7 +97,7 @@
                       <span class="qa-text">Student Forum</span>
                     </a>
                     <a href="/room-booking" class="qa-item">
-                      <div class="qa-icon">🏫</div>
+                      <div class="qa-icon">📅</div>
                       <span class="qa-text">Room Booking</span>
                     </a>
                     <a href="/feedback" class="qa-item">
@@ -185,6 +189,7 @@
                     <a href="/rooms/my-bookings" class="btn-module"
                       style="text-decoration: none; display: inline-block;">Open</a>
                   </div>
+
                   <% } %>
 
                     <% if (isStaff) { %>
@@ -205,6 +210,14 @@
                           style="text-decoration: none; display: inline-block;">Open</a>
                       </div>
                       <% } %>
+                        <div class="module-item">
+                          <div>
+                            <h4>View/Manage Room Bookings</h4>
+                            <p>View and manage your upcoming reservations.</p>
+                          </div>
+                          <a href="/rooms/my-bookings" class="btn-module"
+                            style="text-decoration: none; display: inline-block;">Open</a>
+                        </div>
               </div>
             </div>
 

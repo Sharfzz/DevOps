@@ -6,12 +6,12 @@ const bookingSchema = new mongoose.Schema({
     ref: 'Room',
     required: true
   },
-  studentName: {
+  userName: {
     type: String,
     required: true,
     trim: true
   },
-  studentId: {
+  userId: {
     type: String,
     required: true,
     trim: true,
