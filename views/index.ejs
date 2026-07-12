@@ -2,118 +2,13 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
-    <title>Campus Portal</title>
-    <!-- Use Inter font for a modern, clean look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Clean White Background */
-            --bg-primary: #FFFFFF;
-
-            /* Text Colors */
-            --text-main: #111827;
-            --text-muted: #6B7280;
-
-            /* Navbar Variables */
-            --nav-bg: rgba(255, 255, 255, 0.9);
-            --nav-border: #E5E7EB;
-
-            /* Interaction Colors */
-            --accent: #3B82F6;
-            --accent-hover: #2563EB;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-
-        /* --- Main Content Layout --- */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 5rem 5%;
-        }
-
-        .hero {
-            text-align: center;
-            margin-top: 2rem;
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 600;
-            letter-spacing: -0.04em;
-            margin-bottom: 1rem;
-            color: var(--text-main);
-        }
-
-        .hero p {
-            color: var(--text-muted);
-            font-size: 1.125rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .hero-cta {
-            display: inline-block;
-            margin-top: 2rem;
-            background-color: var(--accent);
-            color: #FFFFFF;
-            padding: 0.75rem 1.75rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        .hero-cta:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .hero-cta:active {
-            transform: scale(0.98);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* --- Responsive Styles --- */
-        @media (max-width: 768px) {
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
@@ -124,13 +19,14 @@
       avatarUrl=`https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=${isStaff
       ? '8b5cf6' : '3b82f6' }&color=fff&size=128`; %>
 
-        <!-- Main Content -->
-        <main class="main-container">
-            <section class="hero">
-                <h1>Welcome to Campus Portal</h1>
-                <p>Access your student resources, connect with peers, and manage your campus life efficiently.</p>
-                <a href="/feedback" class="hero-cta">Go to Feedback &amp; Maintenance Tickets</a>
-            </section>
+      <div class="dashboard-container">
+        <div class="greeting-banner <%= isStaff ? 'staff-banner' : '' %>">
+          <img src="<%= avatarUrl %>" alt="Profile Avatar" class="greeting-avatar">
+          <div class="greeting-text">
+            <h1>Welcome back, <%= profile.fullName %>! <span class="role-inline">(<%= role %>)</span></h1>
+            <p>Campus Portal</p>
+          </div>
+        </div>
         </main>
 
         <!-- Unified Dashboard Grid -->
@@ -172,15 +68,20 @@
             <!-- Quick Access Panel -->
             <div class="dash-card" style="grid-column: span 2;">
               <h2 class="dash-card-header">Quick Access</h2>
-              <div class="quick-access-grid">
+              <!-- Added inline grid styling to force 4 equally sized boxes -->
+              <div class="quick-access-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                 <% if (isStaff || profile.role==='Admin' ) { %>
                   <a href="/admin/helpdesk" class="qa-item staff">
-                    <div class="qa-icon">⚙️</div>
+                    <div class="qa-icon">🛟</div>
                     <span class="qa-text">IT Helpdesk</span>
                   </a>
                   <a href="/forum" class="qa-item staff">
                     <div class="qa-icon">💬</div>
                     <span class="qa-text">Forum</span>
+                  </a>
+                  <a href="/feedback" class="qa-item staff">
+                    <div class="qa-icon">📝</div>
+                    <span class="qa-text">Feedback</span>
                   </a>
                   <a href="/profile" class="qa-item staff">
                     <div class="qa-icon">👤</div>
@@ -192,8 +93,12 @@
                       <span class="qa-text">Student Forum</span>
                     </a>
                     <a href="/room-booking" class="qa-item">
-                        <div class="qa-icon">📅</div>
-                        <span class="qa-text">Room Booking</span>
+                      <div class="qa-icon">🏫</div>
+                      <span class="qa-text">Room Booking</span>
+                    </a>
+                    <a href="/feedback" class="qa-item">
+                      <div class="qa-icon">📝</div>
+                      <span class="qa-text">Feedback</span>
                     </a>
                     <a href="/profile" class="qa-item">
                       <div class="qa-icon">👤</div>
@@ -270,8 +175,7 @@
                       <h4>Student Forum</h4>
                       <p>Join campus discussions and announcements</p>
                     </div>
-                    <a href="/forum" class="btn-module"
-                      style="text-decoration: none; display: inline-block;">Open</a>
+                    <a href="/forum" class="btn-module" style="text-decoration: none; display: inline-block;">Open</a>
                   </div>
                   <div class="module-item">
                     <div>

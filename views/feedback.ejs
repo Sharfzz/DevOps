@@ -19,17 +19,14 @@
             --nav-border: #E5E7EB;
             --accent: #3B82F6;
             --accent-hover: #2563EB;
-
             --surface: #F9FAFB;
             --border: #E5E7EB;
-
             --priority-high: #DC2626;
             --priority-high-bg: #FEF2F2;
             --priority-medium: #D97706;
             --priority-medium-bg: #FFFBEB;
             --priority-low: #059669;
             --priority-low-bg: #ECFDF5;
-
             --status-open-bg: #EFF6FF;
             --status-open: #1D4ED8;
             --status-progress-bg: #FEF3C7;
@@ -42,15 +39,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
             background-color: var(--bg-primary);
             color: var(--text-main);
             line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         .main-container {
@@ -62,24 +57,8 @@
         .page-header {
             text-align: center;
             margin-bottom: 3rem;
-            animation: fadeIn 0.6s ease-out forwards;
         }
 
-        .page-header h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.75rem;
-        }
-
-        .page-header p {
-            color: var(--text-muted);
-            font-size: 1.05rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* --- Tabs --- */
         .tabs {
             display: flex;
             gap: 0.5rem;
@@ -92,15 +71,9 @@
             border: none;
             cursor: pointer;
             padding: 0.85rem 1.25rem;
-            font-size: 0.95rem;
             font-weight: 500;
             color: var(--text-muted);
             border-bottom: 2px solid transparent;
-            transition: color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-main);
         }
 
         .tab-btn.active {
@@ -110,19 +83,16 @@
 
         .tab-panel {
             display: none;
-            animation: fadeIn 0.4s ease-out forwards;
         }
 
         .tab-panel.active {
             display: block;
         }
 
-        /* --- Cards / Forms --- */
         .grid-two {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2.5rem;
-            align-items: start;
         }
 
         .card {
@@ -132,94 +102,17 @@
             padding: 2rem;
         }
 
-        .card h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.35rem;
-        }
-
-        .card .card-sub {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-
         .field {
             margin-bottom: 1.25rem;
-        }
-
-        .field label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.4rem;
-            color: var(--text-main);
         }
 
         .field input,
         .field select,
         .field textarea {
             width: 100%;
-            padding: 0.65rem 0.85rem;
+            padding: 0.65rem;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            background-color: #FFFFFF;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-
-        .field textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .priority-options {
-            display: flex;
-            gap: 0.6rem;
-        }
-
-        .priority-options input {
-            display: none;
-        }
-
-        .priority-pill {
-            flex: 1;
-            text-align: center;
-            padding: 0.55rem 0;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: all 0.15s ease;
-        }
-
-        .priority-options input:checked+.priority-pill.priority-high {
-            background-color: var(--priority-high-bg);
-            color: var(--priority-high);
-            border-color: var(--priority-high);
-        }
-
-        .priority-options input:checked+.priority-pill.priority-medium {
-            background-color: var(--priority-medium-bg);
-            color: var(--priority-medium);
-            border-color: var(--priority-medium);
-        }
-
-        .priority-options input:checked+.priority-pill.priority-low {
-            background-color: var(--priority-low-bg);
-            color: var(--priority-low);
-            border-color: var(--priority-low);
         }
 
         .btn-submit {
@@ -229,284 +122,162 @@
             border: none;
             border-radius: 8px;
             padding: 0.8rem;
-            font-size: 0.95rem;
-            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
-        .btn-submit:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-submit:active {
-            transform: scale(0.99);
-        }
-
-        /* --- Lists --- */
-        .list-section-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .ticket-list,
-        .feedback-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.9rem;
-            max-height: 560px;
-            overflow-y: auto;
-            padding-right: 0.25rem;
-        }
-
-        .ticket-item,
-        .feedback-item {
+        .ticket-item {
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 1.1rem 1.25rem;
-            background-color: #FFFFFF;
-        }
-
-        .ticket-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .ticket-title {
-            font-weight: 600;
-            font-size: 0.95rem;
+            padding: 1.1rem;
+            margin-bottom: 1rem;
+            background: #fff;
         }
 
         .badge {
-            display: inline-block;
             font-size: 0.75rem;
             font-weight: 600;
             padding: 0.2rem 0.6rem;
             border-radius: 999px;
-            white-space: nowrap;
         }
 
-        .badge.priority-high { background-color: var(--priority-high-bg); color: var(--priority-high); }
-        .badge.priority-medium { background-color: var(--priority-medium-bg); color: var(--priority-medium); }
-        .badge.priority-low { background-color: var(--priority-low-bg); color: var(--priority-low); }
-
-        .badge.status-open { background-color: var(--status-open-bg); color: var(--status-open); }
-        .badge.status-in-progress { background-color: var(--status-progress-bg); color: var(--status-progress); }
-        .badge.status-resolved { background-color: var(--status-resolved-bg); color: var(--status-resolved); }
-
-        .ticket-meta {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-bottom: 0.5rem;
+        .badge.priority-high {
+            background-color: var(--priority-high-bg);
+            color: var(--priority-high);
         }
 
-        .ticket-desc,
-        .feedback-text {
-            font-size: 0.875rem;
-            color: var(--text-main);
-        }
-
-        .feedback-item-top {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
+        .badge.status-resolved {
+            background-color: var(--status-resolved-bg);
+            color: var(--status-resolved);
         }
 
         .empty-state {
             text-align: center;
             color: var(--text-muted);
-            font-size: 0.9rem;
             padding: 2rem 0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 900px) {
-            .grid-two {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .page-header h1 {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
 
 <body>
-
     <%- include('partials/navbar') %>
 
         <main class="main-container">
             <section class="page-header">
                 <h1>Feedback &amp; Maintenance</h1>
-                <p>Share feedback about campus life or raise a facility/IT maintenance ticket. Tickets are ranked by
-                    priority so urgent issues get attention first.</p>
             </section>
 
-            <% if (typeof authError !== 'undefined' && authError) { %>
-                <div class="empty-state" style="border:1px solid var(--border); border-radius:12px; padding:2rem;">
-                    <%= authError %> Please log in to continue.
-                </div>
-            <% } else { %>
-
             <div class="tabs">
-                <button class="tab-btn active" data-tab="feedback-panel" type="button">Student Feedback</button>
+                <button class="tab-btn" data-tab="feedback-panel" type="button">Student Feedback</button>
                 <button class="tab-btn" data-tab="ticket-panel" type="button">Maintenance Tickets</button>
             </div>
 
-            <!-- ================= FEEDBACK PANEL ================= -->
-            <div class="tab-panel active" id="feedback-panel">
+            <div class="tab-panel" id="feedback-panel">
                 <div class="grid-two">
                     <div class="card">
                         <h2>Share Your Feedback</h2>
-                        <p class="card-sub">Tell us about your experience &mdash; courses, facilities, or general
-                            campus life. Submitted anonymously; we don't record who sent it.</p>
                         <form action="/feedback/student" method="POST">
                             <div class="field">
-                                <label for="fb-category">Category</label>
-                                <select id="fb-category" name="category" required>
+                                <label>Category</label>
+                                <select name="category" required>
                                     <option value="Academics">Academics</option>
                                     <option value="Facilities">Facilities</option>
-                                    <option value="Events">Events</option>
                                     <option value="General">General</option>
                                 </select>
                             </div>
                             <div class="field">
-                                <label for="fb-message">Your Feedback</label>
-                                <textarea id="fb-message" name="message" placeholder="Share your thoughts..."
-                                    required></textarea>
+                                <label>Your Feedback</label>
+                                <textarea name="message" required></textarea>
                             </div>
                             <button class="btn-submit" type="submit">Submit Feedback</button>
                         </form>
                     </div>
-
                     <div>
-                        <h3 class="list-section-title">Recent Feedback</h3>
-                        <div class="feedback-list">
-                            <% if (feedbackList && feedbackList.length) { %>
-                                <% feedbackList.slice().reverse().forEach(function(item) { %>
-                                    <div class="feedback-item">
-                                        <div class="feedback-item-top">
-                                            <span>Anonymous</span>
-                                            <span><%= item.category %> &middot; <%= item.date %></span>
-                                        </div>
-                                        <div class="feedback-text"><%= item.message %></div>
-                                    </div>
+                        <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                            <h3 class="list-section-title">Recent Feedback (Admin View)</h3>
+                            <% feedbackList.slice().reverse().forEach(item=> { %>
+                                <div class="feedback-item">
+                                    <%= item.message %> (<%= item.category %>)
+                                </div>
                                 <% }) %>
-                            <% } else { %>
-                                <div class="empty-state">No feedback submitted yet. Be the first!</div>
-                            <% } %>
-                        </div>
+                                    <% } else { %>
+                                        <h3 class="list-section-title">Feedback Privacy</h3>
+                                        <p>Feedback logs are not visible to students.</p>
+                                        <% } %>
                     </div>
                 </div>
             </div>
 
-            <!-- ================= TICKET PANEL ================= -->
             <div class="tab-panel" id="ticket-panel">
                 <div class="grid-two">
                     <div class="card">
-                        <h2>Raise a Maintenance Ticket</h2>
-                        <p class="card-sub">Report a facility or IT issue. Set its urgency so it's queued correctly.</p>
+                        <h2>Raise a Ticket</h2>
                         <form action="/feedback/ticket" method="POST">
                             <div class="field">
-                                <label for="tk-title">Issue Title</label>
-                                <input type="text" id="tk-title" name="title" placeholder="e.g. Broken projector in LT3"
-                                    required>
+                                <label>Issue Title</label>
+                                <input type="text" name="title" required>
                             </div>
                             <div class="field">
-                                <label for="tk-type">Type</label>
-                                <select id="tk-type" name="type" required>
-                                    <% ticketTypes.forEach(function(t) { %>
-                                        <option value="<%= t %>"><%= t %></option>
-                                    <% }) %>
-                                </select>
+                                <label>Location</label>
+                                <input type="text" name="location" required>
                             </div>
                             <div class="field">
-                                <label for="tk-location">Location</label>
-                                <input type="text" id="tk-location" name="location" placeholder="e.g. Block A, Room 204"
-                                    required>
-                            </div>
-                            <div class="field">
-                                <label>Priority</label>
-                                <div class="priority-options">
-                                    <label style="flex:1;">
-                                        <input type="radio" name="priority" value="High" checked>
-                                        <span class="priority-pill priority-high">High</span>
-                                    </label>
-                                    <label style="flex:1;">
-                                        <input type="radio" name="priority" value="Medium">
-                                        <span class="priority-pill priority-medium">Medium</span>
-                                    </label>
-                                    <label style="flex:1;">
-                                        <input type="radio" name="priority" value="Low">
-                                        <span class="priority-pill priority-low">Low</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label for="tk-desc">Description</label>
-                                <textarea id="tk-desc" name="description" placeholder="Describe the issue..."
-                                    required></textarea>
+                                <label>Description</label>
+                                <textarea name="description" required></textarea>
                             </div>
                             <button class="btn-submit" type="submit">Submit Ticket</button>
                         </form>
                     </div>
-
                     <div>
-                        <h3 class="list-section-title">Open Tickets &middot; Sorted by Priority</h3>
-                        <div class="ticket-list">
-                            <% if (tickets && tickets.length) { %>
-                                <% tickets.forEach(function(t) { %>
-                                    <div class="ticket-item">
-                                        <div class="ticket-top">
-                                            <span class="ticket-title"><%= t.title %></span>
-                                            <span class="badge priority-<%= t.priority.toLowerCase() %>"><%= t.priority %></span>
+                        <h3>
+                            <%= (user.role==='Admin' || user.role==='Staff' ) ? 'All Tickets' : 'Your Tickets' %>
+                        </h3>
+                        <% tickets.forEach(t=> { %>
+                            <div class="ticket-item">
+                                <p><strong>
+                                        <%= t.title %>
+                                    </strong> - <%= t.status %>
+                                </p>
+                                <p>Routed to: <%= t.assignedTo %>
+                                </p>
+
+                                <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                                    <% if (t.raisedBy !==user.fullName) { %>
+                                        <div style="margin-top: 1rem;">
+                                            <form action="/feedback/ticket/status/<%= t._id %>" method="POST">
+                                                <input type="hidden" name="action"
+                                                    value="<%= t.status === 'Open' ? 'accept' : 'complete' %>">
+                                                <button type="submit">
+                                                    <%= t.status==='Open' ? 'Accept' : 'Complete' %>
+                                                </button>
+                                            </form>
                                         </div>
-                                        <div class="ticket-meta">
-                                            #<%= t.id %> &middot; <%= t.type %> &middot; <%= t.location %> &middot; <%= t.date %>
-                                            &middot;
-                                            <span class="badge status-<%= t.status.toLowerCase().replace(' ', '-') %>"><%= t.status %></span>
-                                        </div>
-                                        <div class="ticket-meta">
-                                            Routed to <strong><%= t.assignedTo %></strong> &middot; Raised by <%= t.raisedBy %> (<%= t.raisedByRole %>)
-                                        </div>
-                                        <div class="ticket-desc"><%= t.description %></div>
-                                    </div>
-                                <% }) %>
-                            <% } else { %>
-                                <div class="empty-state">No tickets raised yet.</div>
-                            <% } %>
-                        </div>
+                                        <% } %>
+                                            <% } %>
+                            </div>
+                            <% }) %>
                     </div>
                 </div>
             </div>
-
-            <% } %>
         </main>
 
         <script>
-            document.querySelectorAll('.tab-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-                    document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-                    btn.classList.add('active');
-                    document.getElementById(btn.dataset.tab).classList.add('active');
+            document.addEventListener('DOMContentLoaded', () => {
+                const lastTab = localStorage.getItem('activeFeedbackTab') || 'feedback-panel';
+                const activateTab = (tabId) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                };
+                activateTab(lastTab);
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        localStorage.setItem('activeFeedbackTab', btn.dataset.tab);
+                        activateTab(btn.dataset.tab);
+                    });
                 });
             });
         </script>
-
 </body>
 
 </html>

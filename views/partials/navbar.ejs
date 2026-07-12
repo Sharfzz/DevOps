@@ -1,121 +1,33 @@
-<%
-  const current = typeof currentPath !== 'undefined' ? currentPath : '';
-  const loggedIn = typeof user !== 'undefined' && user;
-  const isAdmin = loggedIn && user.role === 'Admin';
-%>
+<% const current=typeof currentPath !=='undefined' ? currentPath : '' ; const loggedIn=typeof user !=='undefined' &&
+  user; const isAdmin=loggedIn && user.role==='Admin' ; %>
 
-<nav style="background-color: #0f172a; border-bottom: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
-  <div style="width: 95%; max-width: 1540px; margin: 0 auto; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;">
-    
-    <a href="/" style="display: flex; align-items: center; gap: 10px; color: #ffffff; text-decoration: none;">
-      <img src="/images/campushub-logo.png" alt="CampusHub Logo" style="height: 70px; width: auto; display: block;">
-      <div style="font-weight: 700; font-size: 22px; letter-spacing: -0.5px;"></div>
-    </a>
+  <nav
+    style="background-color: #0f172a; border-bottom: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
+    <div
+      style="width: 95%; max-width: 1540px; margin: 0 auto; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; flex-wrap: wrap; gap: 16px;">
 
-    .navbar-menu {
-        display: flex;
-        align-items: center;
-        gap: 2.5rem;
-    }
+      <a href="/" style="display: flex; align-items: center; gap: 10px; color: #ffffff; text-decoration: none;">
+        <img src="/images/campushub-logo.png" alt="CampusHub Logo" style="height: 70px; width: auto; display: block;">
+        <div style="font-weight: 700; font-size: 22px; letter-spacing: -0.5px;"></div>
+      </a>
 
-    .nav-link {
-        text-decoration: none;
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: color 0.2s ease;
-    }
-
-    .nav-link:hover {
-        color: var(--text-main);
-    }
-
-    .nav-link-login {
-        background-color: var(--text-main);
-        color: #FFFFFF;
-        padding: 0.5rem 1.25rem;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-
-    .nav-link-login:hover {
-        background-color: var(--text-muted);
-        color: #FFFFFF;
-    }
-
-    .nav-link-login:active {
-        transform: scale(0.98);
-    }
-
-    /* Mobile Menu Toggle Button */
-    .mobile-toggle {
-        display: none;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.5rem;
-    }
-
-    .mobile-toggle svg {
-        width: 24px;
-        height: 24px;
-        stroke: var(--text-main);
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    @media (max-width: 768px) {
-        .navbar-menu {
-            display: none;
-            position: absolute;
-            top: 72px;
-            left: 0;
-            right: 0;
-            background-color: var(--bg-primary);
-            flex-direction: column;
-            align-items: center;
-            padding: 1.5rem 0;
-            gap: 1.5rem;
-            border-bottom: 1px solid var(--nav-border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Class added via JS for mobile menu toggle */
-        .navbar-menu.is-open {
-            display: flex;
-        }
-
-        .mobile-toggle {
-            display: block;
-        }
-    }
-</style>
-
-<!-- Navigation Bar -->
-<nav class="navbar">
-    <a href="#" class="navbar-brand">Campus Portal</a>
-
-    <!-- Mobile Toggle Icon -->
-    <button class="mobile-toggle" aria-label="Toggle Menu"
-        onclick="document.getElementById('navMenu').classList.toggle('is-open')">
-        <svg viewBox="0 0 24 24" fill="none">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
-
-    <!-- Navigation Links -->
-    <div id="navMenu" class="navbar-menu">
-        <a href="/" class="nav-link">Home</a>
-        <a href="#" class="nav-link">Student Forum</a>
-        <a href="#" class="nav-link">Room Booking</a>
-        <a href="/feedback" class="nav-link">Feedback</a>
-        <a href="#" class="nav-link-login">Login</a>
+      <div style="display: flex; gap: 28px; align-items: center; font-size: 14px; font-weight: 500; flex-wrap: wrap;">
+        <% if (loggedIn) { %>
+          <a href="/" style="color: #94a3b8; text-decoration: none;">Home</a>
+          <a href="/forum" style="color: #94a3b8; text-decoration: none;">Student Forum</a>
+          <a href="/booking" style="color: #94a3b8; text-decoration: none;">Room Booking</a>
+          <a href="/feedback" style="color: #94a3b8; text-decoration: none;">Feedback</a>
+          <a href="/profile" style="color: #94a3b8; text-decoration: none;">Profile</a>
+          <% if (isAdmin) { %>
+            <a href="/admin/helpdesk" style="color: #94a3b8; text-decoration: none;">Admin Helpdesk</a>
+            <% } %>
+              <a href="/logout"
+                style="color: #ffffff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">Logout</a>
+              <% } else { %>
+                <a href="/login" style="color: #94a3b8; text-decoration: none;">Sign In</a>
+                <a href="/register"
+                  style="color: #ffffff; background: #2563eb; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">Register</a>
+                <% } %>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
