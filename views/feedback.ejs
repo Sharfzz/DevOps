@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline';">
+    <title>Feedback &amp; Maintenance | Campus Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --nav-border: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-hover: #2563EB;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --priority-high: #DC2626;
+            --priority-high-bg: #FEF2F2;
+            --priority-medium: #D97706;
+            --priority-medium-bg: #FFFBEB;
+            --priority-low: #059669;
+            --priority-low-bg: #ECFDF5;
+            --status-open-bg: #EFF6FF;
+            --status-open: #1D4ED8;
+            --status-progress-bg: #FEF3C7;
+            --status-progress: #92400E;
+            --status-resolved-bg: #F3F4F6;
+            --status-resolved: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3.5rem 5% 5rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--nav-border);
+            margin-bottom: 2.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.85rem 1.25rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .grid-two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .field {
+            margin-bottom: 1.25rem;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            padding: 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--text-main);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem;
+            cursor: pointer;
+        }
+
+        .ticket-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.1rem;
+            margin-bottom: 1rem;
+            background: #fff;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+        }
+
+        .badge.priority-high {
+            background-color: var(--priority-high-bg);
+            color: var(--priority-high);
+        }
+
+        .badge.status-resolved {
+            background-color: var(--status-resolved-bg);
+            color: var(--status-resolved);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <main class="main-container">
+            <section class="page-header">
+                <h1>Feedback &amp; Maintenance</h1>
+            </section>
+
+            <div class="tabs">
+                <button class="tab-btn" data-tab="feedback-panel" type="button">Student Feedback</button>
+                <button class="tab-btn" data-tab="ticket-panel" type="button">Maintenance Tickets</button>
+            </div>
+
+            <div class="tab-panel" id="feedback-panel">
+                <div class="grid-two">
+                    <div class="card">
+                        <h2>Share Your Feedback</h2>
+                        <form action="/feedback/student" method="POST">
+                            <div class="field">
+                                <label>Category</label>
+                                <select name="category" required>
+                                    <option value="Academics">Academics</option>
+                                    <option value="Facilities">Facilities</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Your Feedback</label>
+                                <textarea name="message" required></textarea>
+                            </div>
+                            <button class="btn-submit" type="submit">Submit Feedback</button>
+                        </form>
+                    </div>
+                    <div>
+                        <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                            <h3 class="list-section-title">Recent Feedback (Admin View)</h3>
+                            <% feedbackList.slice().reverse().forEach(item=> { %>
+                                <div class="feedback-item">
+                                    <%= item.message %> (<%= item.category %>)
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <h3 class="list-section-title">Feedback Privacy</h3>
+                                        <p>Feedback logs are not visible to students.</p>
+                                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="ticket-panel">
+                <div class="grid-two">
+                    <div class="card">
+                        <h2>Raise a Ticket</h2>
+                        <form action="/feedback/ticket" method="POST">
+                            <div class="field">
+                                <label>Issue Title</label>
+                                <input type="text" name="title" required>
+                            </div>
+                            <div class="field">
+                                <label>Location</label>
+                                <input type="text" name="location" required>
+                            </div>
+                            <div class="field">
+                                <label>Description</label>
+                                <textarea name="description" required></textarea>
+                            </div>
+                            <button class="btn-submit" type="submit">Submit Ticket</button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3>
+                            <%= (user.role==='Admin' || user.role==='Staff' ) ? 'All Tickets' : 'Your Tickets' %>
+                        </h3>
+                        <% tickets.forEach(t=> { %>
+                            <div class="ticket-item">
+                                <p><strong>
+                                        <%= t.title %>
+                                    </strong> - <%= t.status %>
+                                </p>
+                                <p>Routed to: <%= t.assignedTo %>
+                                </p>
+
+                                <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                                    <% if (t.raisedBy !==user.fullName) { %>
+                                        <div style="margin-top: 1rem;">
+                                            <form action="/feedback/ticket/status/<%= t._id %>" method="POST">
+                                                <input type="hidden" name="action"
+                                                    value="<%= t.status === 'Open' ? 'accept' : 'complete' %>">
+                                                <button type="submit">
+                                                    <%= t.status==='Open' ? 'Accept' : 'Complete' %>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <% } %>
+                                            <% } %>
+                            </div>
+                            <% }) %>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const lastTab = localStorage.getItem('activeFeedbackTab') || 'feedback-panel';
+                const activateTab = (tabId) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                };
+                activateTab(lastTab);
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        localStorage.setItem('activeFeedbackTab', btn.dataset.tab);
+                        activateTab(btn.dataset.tab);
+                    });
+                });
+            });
+        </script>
+</body>
+
+</html>

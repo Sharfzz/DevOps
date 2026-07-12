@@ -68,15 +68,20 @@
             <!-- Quick Access Panel -->
             <div class="dash-card" style="grid-column: span 2;">
               <h2 class="dash-card-header">Quick Access</h2>
-              <div class="quick-access-grid">
+              <!-- Added inline grid styling to force 4 equally sized boxes -->
+              <div class="quick-access-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                 <% if (isStaff || profile.role==='Admin' ) { %>
                   <a href="/admin/helpdesk" class="qa-item staff">
-                    <div class="qa-icon">⚙️</div>
+                    <div class="qa-icon">🛟</div>
                     <span class="qa-text">IT Helpdesk</span>
                   </a>
                   <a href="/forum" class="qa-item staff">
                     <div class="qa-icon">💬</div>
                     <span class="qa-text">Forum</span>
+                  </a>
+                  <a href="/feedback" class="qa-item staff">
+                    <div class="qa-icon">📝</div>
+                    <span class="qa-text">Feedback</span>
                   </a>
                   <a href="/room-booking" class="qa-item staff">
                     <div class="qa-icon">📅</div>
@@ -94,6 +99,10 @@
                     <a href="/room-booking" class="qa-item">
                       <div class="qa-icon">📅</div>
                       <span class="qa-text">Room Booking</span>
+                    </a>
+                    <a href="/feedback" class="qa-item">
+                      <div class="qa-icon">📝</div>
+                      <span class="qa-text">Feedback</span>
                     </a>
                     <a href="/profile" class="qa-item">
                       <div class="qa-icon">👤</div>
@@ -171,6 +180,14 @@
                       <p>Join campus discussions and announcements</p>
                     </div>
                     <a href="/forum" class="btn-module" style="text-decoration: none; display: inline-block;">Open</a>
+                  </div>
+                  <div class="module-item">
+                    <div>
+                      <h4>My Bookings</h4>
+                      <p>View and manage your upcoming reservations.</p>
+                    </div>
+                    <a href="/rooms/my-bookings" class="btn-module"
+                      style="text-decoration: none; display: inline-block;">Open</a>
                   </div>
 
                   <% } %>
