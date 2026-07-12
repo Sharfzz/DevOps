@@ -14,6 +14,7 @@ const User = require('./models/User');
 const Question = require('./models/Question');
 const Feedback = require('./models/Feedback');
 const Ticket = require('./models/Ticket');
+const Notification = require('./models/Notification');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -162,7 +163,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// === FEEDBACK & MAINTENANCE ROUTES ===
 app.get('/feedback', requireLogin, async (req, res) => {
   try {
     const isAdminOrStaff = req.session.user.role === 'Admin' || req.session.user.role === 'Staff';
@@ -170,14 +170,14 @@ app.get('/feedback', requireLogin, async (req, res) => {
     let tickets = [];
 
     if (isAdminOrStaff) {
-      feedbackList = await Feedback.find();
-      tickets = await Ticket.find().sort({ priorityWeight: 1 });
+      feedbackList = await Feedback.find().sort({ createdAt: -1 });
+      tickets = await Ticket.find().sort({ priorityWeight: 1, createdAt: -1 });
     } else {
-      feedbackList = [];
-      tickets = await Ticket.find({ raisedBy: req.session.user.fullName }).sort({ priorityWeight: 1 });
+      feedbackList = await Feedback.find({ raisedBy: req.session.user.fullName }).sort({ createdAt: -1 });
+      tickets = await Ticket.find({ raisedBy: req.session.user.fullName }).sort({ priorityWeight: 1, createdAt: -1 });
     }
 
-    const ticketTypes = ['IT', 'Facility', 'General'];
+    const ticketTypes = ['IT', 'Facility', 'General', 'Housing'];
 
     res.render('feedback', {
       feedbackList,
@@ -194,7 +194,13 @@ app.post('/feedback/student', requireLogin, async (req, res) => {
   try {
     const { category, message } = req.body;
     const date = new Date().toLocaleDateString('en-GB');
-    await Feedback.create({ category, message, date });
+    await Feedback.create({
+      category,
+      message,
+      date,
+      raisedBy: req.session.user.fullName,
+      raisedByRole: req.session.user.role
+    });
     res.redirect('/feedback');
   } catch (error) {
     console.error("Error submitting feedback:", error);
@@ -202,22 +208,17 @@ app.post('/feedback/student', requireLogin, async (req, res) => {
   }
 });
 
-// Upgraded Smart Ticketing Route
-// Fully Automated Smart Ticketing Route
 app.post('/feedback/ticket', requireLogin, async (req, res) => {
   try {
-    // Notice we are no longer pulling 'type' from req.body
     const { title, location, priority, description } = req.body;
     const date = new Date().toLocaleDateString('en-GB');
 
     const weightMap = { 'High': 0, 'Medium': 1, 'Low': 2 };
     const priorityWeight = weightMap[priority] !== undefined ? weightMap[priority] : 1;
 
-    // Default fallbacks if no keywords match
     let autoType = 'General';
     let assignedDepartment = 'General Admin';
 
-    // Text analysis for 100% automated routing
     const textToAnalyze = (title + " " + description).toLowerCase();
 
     if (textToAnalyze.includes('clean') || textToAnalyze.includes('spill') || textToAnalyze.includes('trash')) {
@@ -236,8 +237,8 @@ app.post('/feedback/ticket', requireLogin, async (req, res) => {
 
     await Ticket.create({
       title,
-      type: autoType, // Using the automated type
-      assignedTo: assignedDepartment, // Using the automated department
+      type: autoType,
+      assignedTo: assignedDepartment,
       location,
       priority,
       priorityWeight,
@@ -254,7 +255,6 @@ app.post('/feedback/ticket', requireLogin, async (req, res) => {
   }
 });
 
-// Admin Ticket Reassignment Route
 app.post('/feedback/ticket/reassign/:id', requireLogin, async (req, res) => {
   try {
     const authorizedRoles = ['Admin', 'Staff'];
@@ -277,7 +277,6 @@ app.post('/feedback/ticket/reassign/:id', requireLogin, async (req, res) => {
   }
 });
 
-// Staff Ticket Status Route
 app.post('/feedback/ticket/status/:id', requireLogin, async (req, res) => {
   try {
     if (req.session.user.role === 'Student') {
@@ -302,7 +301,6 @@ app.post('/feedback/ticket/status/:id', requireLogin, async (req, res) => {
   }
 });
 
-// === REGISTRATION ROUTES ===
 app.get('/register', (req, res) => {
   res.render('register', { error: null, fullName: '', campusId: '', role: '', securityQuestion: '', securityAnswer: '' });
 });
@@ -323,6 +321,7 @@ app.post('/register', async (req, res) => {
         securityAnswer: req.body.securityAnswer
       });
     }
+
     if (role === 'Admin' && cleanId.startsWith('S')) {
       return res.render('register', {
         error: "Role mismatch: 'S' IDs are reserved for Students.",
@@ -368,21 +367,17 @@ app.post('/register', async (req, res) => {
     whitelistUser.password = await bcrypt.hash(password, salt);
     whitelistUser.securityQuestion = securityQuestion;
     whitelistUser.securityAnswer = securityAnswer;
-
     whitelistUser.recoveryKey = "CP-" + crypto.randomBytes(4).toString('hex').toUpperCase();
-
     whitelistUser.isRegistered = true;
     await whitelistUser.save();
 
     res.redirect('/login');
-
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).send("Server Error during registration");
   }
 });
 
-// === PASSWORD RESET FLOWS ===
 app.post('/request-it-reset', async (req, res) => {
   try {
     const { campusId } = req.body;
@@ -408,28 +403,21 @@ app.post('/request-it-reset', async (req, res) => {
 });
 
 app.get('/force-password-update', (req, res) => {
-  if (!req.session.forceUpdateUserId) {
-    return res.redirect('/login');
-  }
+  if (!req.session.forceUpdateUserId) return res.redirect('/login');
   res.render('force-password-update');
 });
 
 app.post('/force-password-update', async (req, res) => {
   try {
-    if (!req.session.forceUpdateUserId) {
-      return res.redirect('/login');
-    }
+    if (!req.session.forceUpdateUserId) return res.redirect('/login');
     const { newPassword, confirmPassword } = req.body;
     if (newPassword !== confirmPassword) {
       return res.status(400).send('Passwords do not match');
     }
     const user = await User.findById(req.session.forceUpdateUserId);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
+    if (!user) return res.status(404).send('User not found');
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
+    user.password = await bcrypt.hash(newPassword, 10);
     user.mustChangePassword = false;
     await user.save();
 
@@ -441,7 +429,6 @@ app.post('/force-password-update', async (req, res) => {
   }
 });
 
-// === ADMIN HELPDESK ROUTES ===
 app.get('/admin/helpdesk', async (req, res) => {
   const authorizedRoles = ['Admin', 'Staff'];
   if (!req.session.user || !authorizedRoles.includes(req.session.user.role)) {
@@ -510,7 +497,6 @@ app.post('/admin/approve-reset', async (req, res) => {
   }
 });
 
-// === FINANCIAL HUB ROUTES ===
 app.get('/financial', async (req, res) => {
   if (!req.session.user) return res.redirect('/login');
   if (req.session.user.role !== 'Student') return res.redirect('/');
@@ -533,17 +519,17 @@ app.post('/financial/add-card', async (req, res) => {
   const lastFour = rawCard.slice(-4);
   const maskedCard = `**** **** **** ${lastFour}`;
 
-    const newPaymentMethod = {
-        type: req.body.cardType,
-        maskedNumber: maskedCard,
-        brand: "VISA / Mastercard"
-    };
+  const newPaymentMethod = {
+    type: req.body.cardType,
+    maskedNumber: maskedCard,
+    brand: "VISA / Mastercard"
+  };
 
-    await User.findByIdAndUpdate(req.session.user.id, {
-        $push: { 'financials.paymentMethods': newPaymentMethod }
-    });
+  await User.findByIdAndUpdate(req.session.user.id, {
+    $push: { 'financials.paymentMethods': newPaymentMethod }
+  });
 
-    res.redirect('/financial');
+  res.redirect('/financial');
 });
 
 app.post('/financial/remove-card', async (req, res) => {
@@ -560,7 +546,23 @@ app.post('/financial/remove-card', async (req, res) => {
 app.get('/', requireLogin, async (req, res) => {
   try {
     const profile = await User.findById(req.session.user.id);
-    res.render('index', { profile });
+
+    const notifications = await Notification.find({ receiverId: req.session.user.id })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const formattedNotifications = notifications.map(n => ({
+      title: n.title,
+      message: n.message,
+      type: n.type || 'default',
+      timeText: getRelativeTime(n.createdAt)
+    }));
+
+    res.render('index', {
+      profile,
+      notifications: formattedNotifications
+    });
   } catch (err) {
     console.error('Dashboard Error:', err);
     res.status(500).send('Internal Server Error');
@@ -673,9 +675,7 @@ app.post('/reset-password', async (req, res) => {
     }
 
     const user = await User.findById(req.session.resetUserId);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
+    if (!user) return res.status(404).send('User not found');
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
@@ -692,7 +692,7 @@ app.get('/profile', requireLogin, async (req, res) => {
   try {
     const userProfile = await User.findById(req.session.user.id);
     if (!userProfile) {
-      req.session.destroy(() => { });
+      req.session.destroy(() => {});
       return res.redirect('/login');
     }
     res.render('profile', { userProfile });
@@ -785,7 +785,6 @@ app.get('/forum', requireLogin, async (req, res) => {
       isAdmin,
       editReply: null
     });
-
   } catch (err) {
     console.error('Forum load error:', err);
     res.status(500).send('Internal Server Error');
@@ -813,10 +812,62 @@ app.post('/forum', requireLogin, async (req, res) => {
       payload.module = (enquiryTopic || '').trim();
     }
 
-    await Question.create(payload);
-    res.redirect('/forum?success=Question%20posted%20successfully');
+    const question = await Question.create(payload);
+
+    const receivers = await User.find({ role: { $in: ['Admin', 'Staff'] } }).select('_id fullName');
+    if (receivers.length > 0) {
+      await Notification.insertMany(receivers.map(u => ({
+        receiverId: u._id,
+        title: 'New Forum Question',
+        message: `${req.session.user.fullName} posted a question: ${title.trim()}`,
+        type: 'warning',
+        questionId: question._id
+      })));
+    }
+
+    res.redirect('/forum?success=question-posted');
   } catch (err) {
     console.error('Add question error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/reply/:id', requireLogin, async (req, res) => {
+  try {
+    const { reply } = req.body;
+    const questionId = req.params.id;
+
+    if (!reply || reply.trim() === '') {
+      return res.redirect('/forum');
+    }
+
+    const question = await Question.findById(questionId);
+    if (!question) return res.redirect('/forum');
+
+    question.replies.push({
+      userId: req.session.user.id,
+      fullName: req.session.user.fullName,
+      campusId: req.session.user.campusId,
+      text: reply.trim(),
+      helpful: 0,
+      helpfulBy: []
+    });
+
+    await question.save();
+
+    if (String(question.userId) !== String(req.session.user.id)) {
+      await Notification.create({
+        receiverId: question.userId,
+        title: 'Forum Reply',
+        message: `${req.session.user.fullName} replied to your thread.`,
+        type: 'default',
+        questionId: question._id
+      });
+    }
+
+    res.redirect('/forum?success=reply-posted');
+  } catch (err) {
+    console.error('Reply error:', err);
     res.status(500).send('Internal Server Error');
   }
 });
@@ -841,6 +892,10 @@ app.get('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, r
       totalReplies: stats.totalReplies,
       totalModules: stats.totalModules,
       success: '',
+      error: '',
+      user: req.session.user,
+      academicModules,
+      generalTopics,
       isAdmin,
       editReply: { questionId, replyIndex: Number(replyIndex), text: reply.text }
     });
@@ -864,7 +919,7 @@ app.post('/forum/reply/edit/:questionId/:replyIndex', requireLogin, async (req, 
     question.replies[replyIndex].text = replyText.trim();
     await question.save();
 
-    res.redirect('/forum?success=Reply%20updated%20successfully');
+    res.redirect('/forum?success=reply-updated');
   } catch (err) {
     console.error('Edit reply error:', err);
     res.status(500).send('Internal Server Error');
@@ -884,19 +939,96 @@ app.post('/forum/reply/delete/:questionId/:replyIndex', requireLogin, async (req
     question.replies.splice(Number(replyIndex), 1);
     await question.save();
 
-    res.redirect('/forum?success=Reply%20deleted%20successfully');
+    res.redirect('/forum?success=reply-deleted');
   } catch (err) {
     console.error('Delete reply error:', err);
     res.status(500).send('Internal Server Error');
   }
 });
 
-app.post('/forum/solved/:id', requireAdmin, async (req, res) => {
+app.post('/forum/reply/helpful/:questionId/:replyIndex', requireLogin, async (req, res) => {
   try {
+    const { questionId, replyIndex } = req.params;
+    const question = await Question.findById(questionId);
+    if (!question || !question.replies[replyIndex]) return res.redirect('/forum');
+
+    const reply = question.replies[replyIndex];
+    const uid = String(req.session.user.id);
+
+    if (uid === String(reply.userId)) {
+      return res.redirect('/forum?error=cannot-help-own-reply');
+    }
+
+    reply.helpfulBy = Array.isArray(reply.helpfulBy) ? reply.helpfulBy : [];
+
+    if (reply.helpfulBy.includes(uid)) {
+      reply.helpfulBy = reply.helpfulBy.filter(id => id !== uid);
+    } else {
+      reply.helpfulBy.push(uid);
+    }
+
+    reply.helpful = reply.helpfulBy.length;
+    await question.save();
+
+    res.redirect('/forum?success=helpful-updated');
+  } catch (err) {
+    console.error('Helpful toggle error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/solved/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    if (req.session.user.role !== 'Admin' && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
     await Question.findByIdAndUpdate(req.params.id, { solved: true });
-    res.redirect('/forum');
+
+    if (String(question.userId) !== String(req.session.user.id)) {
+      await Notification.create({
+        receiverId: question.userId,
+        title: 'Question Updated',
+        message: `${req.session.user.fullName} marked your question as solved.`,
+        type: 'success',
+        questionId: question._id
+      });
+    }
+
+    res.redirect('/forum?success=question-updated');
   } catch (err) {
     console.error('Solved error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/forum/unsolved/:id', requireLogin, async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) return res.redirect('/forum');
+
+    if (req.session.user.role !== 'Admin' && !isOwner(req, question.userId)) {
+      return res.status(403).send('Forbidden');
+    }
+
+    await Question.findByIdAndUpdate(req.params.id, { solved: false });
+
+    if (String(question.userId) !== String(req.session.user.id)) {
+      await Notification.create({
+        receiverId: question.userId,
+        title: 'Question Updated',
+        message: `${req.session.user.fullName} marked your question as unsolved.`,
+        type: 'warning',
+        questionId: question._id
+      });
+    }
+
+    res.redirect('/forum?success=question-updated');
+  } catch (err) {
+    console.error('Unsolved error:', err);
     res.status(500).send('Internal Server Error');
   }
 });
@@ -911,7 +1043,7 @@ app.post('/forum/delete/:id', requireLogin, async (req, res) => {
     }
 
     await Question.findByIdAndDelete(req.params.id);
-    res.redirect('/forum?success=Question%20deleted%20successfully');
+    res.redirect('/forum?success=question-deleted');
   } catch (err) {
     console.error('Delete question error:', err);
     res.status(500).send('Internal Server Error');
