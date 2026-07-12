@@ -33,10 +33,49 @@
         <main class="main-container">
 
             <!-- Page Header -->
-            <div class="page-header">
+            <div class="page-header"
+                style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
                 <div>
                     <h2 class="page-title">Library Room Booking</h2>
                     <p class="page-subtitle">Browse available rooms and reserve a slot for your session.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2"
+                    style="display: flex; align-items: center; gap: 10px;">
+                    <% if (user.role==='Admin' || (user.campusId && user.campusId.startsWith('E'))) { %>
+                        <button id="btnCreateRoom" class="btn btn-primary">+ Create New Room</button>
+                    <% } %>
+                    <div style="position: relative;">
+                                <button type="button" class="btn btn-secondary" id="filterToggleBtn">Filter by
+                                    Amenities</button>
+                                <div id="amenityDropdown"
+                                    style="display: none; position: absolute; right: 0; top: 100%; z-index: 1000; background: white; border: 1px solid #ccc; padding: 15px; border-radius: 8px; width: max-content; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 5px;">
+                                    <label
+                                        style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 14px;">Select
+                                        Amenities:</label>
+                                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="Power Outlets">
+                                            Power Outlets</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="WiFi">
+                                            WiFi</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="Desk Lamps"> Desk
+                                            Lamps</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="Whiteboard">
+                                            Whiteboard</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="Projector">
+                                            Projector</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb" value="Dual Monitors">
+                                            Dual Monitors</label>
+                                        <label><input type="checkbox" class="amenity-filter-cb"
+                                                value="Video Conferencing"> Video Conferencing</label>
+                                    </div>
+                                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                                        <button type="button" id="cancelFilterBtn" class="btn btn-sm"
+                                            style="background: #e2e8f0; color: #1e293b; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                                        <button type="button" id="confirmFilterBtn" class="btn btn-primary btn-sm"
+                                            style="padding: 4px 8px; border-radius: 4px; cursor: pointer;">Confirm</button>
+                                    </div>
+                                </div>
+                            </div>
                 </div>
             </div>
 
@@ -71,7 +110,8 @@
                                 <% } else { %>
                                     <div class="room-grid">
                                         <% rooms.forEach(room=> { %>
-                                            <div class="room-card">
+                                            <div class="room-card h-100 d-flex flex-column"
+                                                data-amenities="<%= (room.amenities && Array.isArray(room.amenities)) ? room.amenities.join(',') : '' %>">
                                                 <div class="room-card-accent"></div>
                                                 <div class="room-card-body">
                                                     <h3 class="room-name">
@@ -92,11 +132,25 @@
                                                         </div>
                                                         <% } %>
                                                 </div>
-                                                <div class="room-card-footer">
+                                                <div class="room-card-footer mt-auto">
                                                     <a href="/rooms/<%= room._id %>?date=<%= today %>"
                                                         class="btn btn-primary btn-full view-availability-btn"
                                                         data-default-text="View Availability &rarr;"
-                                                        data-slots="<%= typeof room.availableSlots !== 'undefined' ? room.availableSlots : 0 %>">View Availability &rarr;</a>
+                                                        data-slots="<%= typeof room.availableSlots !== 'undefined' ? room.availableSlots : 0 %>">View
+                                                        Availability &rarr;</a>
+
+                                                    <% if (user.role==='Admin' || (user.campusId &&
+                                                        user.campusId.startsWith('E'))) { %>
+                                                        <div
+                                                            style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                                                            <button class="btn btn-secondary btn-sm btn-edit-room"
+                                                                data-room='<%= JSON.stringify(room) %>'
+                                                                style="background-color: #64748b; color: white; border: none;">Edit</button>
+                                                            <button class="btn btn-danger btn-sm btn-delete-room"
+                                                                data-room-id="<%= room._id %>"
+                                                                style="background-color: #ef4444; color: white;">Delete</button>
+                                                        </div>
+                                                        <% } %>
                                                 </div>
                                             </div>
                                             <% }) %>
@@ -114,8 +168,8 @@
                 disableMobile: "true"
             });
 
-            document.querySelectorAll('.view-availability-btn').forEach(function(btn) {
-                btn.addEventListener('mouseenter', function() {
+            document.querySelectorAll('.view-availability-btn').forEach(function (btn) {
+                btn.addEventListener('mouseenter', function () {
                     const slots = parseInt(this.getAttribute('data-slots'), 10) || 0;
                     if (slots === 0) {
                         this.innerText = "Unavailable for today";
@@ -124,12 +178,306 @@
                         this.innerText = `${slots} slots available`;
                     }
                 });
-                btn.addEventListener('mouseleave', function() {
+                btn.addEventListener('mouseleave', function () {
                     this.innerHTML = this.getAttribute('data-default-text');
                     this.classList.remove('hover-error-bg');
                 });
             });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const filterToggleBtn = document.getElementById('filterToggleBtn');
+                const amenityDropdown = document.getElementById('amenityDropdown');
+                const cancelFilterBtn = document.getElementById('cancelFilterBtn');
+                const confirmFilterBtn = document.getElementById('confirmFilterBtn');
+                const filterCheckboxes = document.querySelectorAll('.amenity-filter-cb');
+                const roomCards = document.querySelectorAll('.room-card');
+
+                if (filterToggleBtn && amenityDropdown) {
+                    filterToggleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('Filter button was clicked! Current display:', amenityDropdown.style.display); // DEBUG LOG
+
+                        if (amenityDropdown.style.display === 'none' || amenityDropdown.style.display === '') {
+                            amenityDropdown.style.display = 'block';
+                        } else {
+                            amenityDropdown.style.display = 'none';
+                        }
+                    });
+
+                    // Close dropdown if clicking outside of it
+                    document.addEventListener('click', (e) => {
+                        if (!amenityDropdown.contains(e.target) && e.target !== filterToggleBtn) {
+                            amenityDropdown.style.display = 'none';
+                        }
+                    });
+                } else {
+                    console.error('CRITICAL ERROR: filterToggleBtn or amenityDropdown not found in the DOM.');
+                }
+
+                if (cancelFilterBtn) {
+                    cancelFilterBtn.addEventListener('click', () => {
+                        amenityDropdown.style.display = 'none';
+                    });
+                }
+
+                if (confirmFilterBtn) {
+                    confirmFilterBtn.addEventListener('click', () => {
+                        if (amenityDropdown) amenityDropdown.style.display = 'none';
+
+                        const selectedAmenities = Array.from(filterCheckboxes)
+                            .filter(cb => cb.checked)
+                            .map(cb => cb.value);
+
+                        roomCards.forEach(card => {
+                            const elementToToggle = card.closest('[class*="col-"]') || card.closest('.grid-item') || card;
+                            if (selectedAmenities.length === 0) {
+                                elementToToggle.style.display = '';
+                            } else {
+                                const dataAttr = card.getAttribute('data-amenities');
+                                const roomAmenities = dataAttr ? dataAttr.split(',') : [];
+                                const hasAll = selectedAmenities.every(selected => roomAmenities.includes(selected));
+                                if (hasAll) {
+                                    elementToToggle.style.display = '';
+                                } else {
+                                    elementToToggle.style.display = 'none';
+                                }
+                            }
+                        });
+                    });
+                }
+            });
         </script>
+
+        <% if (user.role==='Admin' || (user.campusId && user.campusId.startsWith('E'))) { %>
+            <!-- Admin Room Modals -->
+            <div id="roomModal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%;">
+                    <h3 id="roomModalTitle" style="margin-top: 0;">Create Room</h3>
+                    <form id="roomForm">
+                        <input type="hidden" id="roomId" name="roomId">
+                        <div style="margin-bottom: 15px;">
+                            <label>Name</label>
+                            <input type="text" id="roomName" class="input-field" required
+                                style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label>Description</label>
+                            <textarea id="roomDesc" class="input-field" required
+                                style="width: 100%; box-sizing: border-box;"></textarea>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label>Capacity</label>
+                            <input type="number" id="roomCapacity" class="input-field" required min="1"
+                                style="width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label>Layout</label>
+                            <select id="roomLayout" class="input-field" required
+                                style="width: 100%; box-sizing: border-box;">
+                                <option value="Open Plan">Open Plan</option>
+                                <option value="Private Office">Private Office</option>
+                                <option value="Boardroom">Boardroom</option>
+                                <option value="Classroom">Classroom</option>
+                                <option value="U-Shape">U-Shape</option>
+                                <option value="Pods">Pods</option>
+                                <option value="Other">Other (Please Specify)</option>
+                            </select>
+                            <input type="text" id="customLayoutInput" name="customLayout" class="input-field"
+                                placeholder="Enter custom layout name"
+                                style="display: none; width: 100%; box-sizing: border-box; margin-top: 8px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label>Amenities</label>
+                            <div id="roomAmenities"
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px;">
+                                <label><input type="checkbox" name="amenities" value="Power Outlets"> Power
+                                    Outlets</label>
+                                <label><input type="checkbox" name="amenities" value="WiFi"> WiFi</label>
+                                <label><input type="checkbox" name="amenities" value="Desk Lamps"> Desk Lamps</label>
+                                <label><input type="checkbox" name="amenities" value="Whiteboard"> Whiteboard</label>
+                                <label><input type="checkbox" name="amenities" value="Projector"> Projector</label>
+                                <label><input type="checkbox" name="amenities" value="Dual Monitors"> Dual
+                                    Monitors</label>
+                                <label><input type="checkbox" name="amenities" value="Video Conferencing"> Video
+                                    Conferencing</label>
+                                <label><input type="checkbox" id="amenityOther" value="Other"> Other (Please
+                                    Specify)</label>
+                            </div>
+                            <input type="text" id="customAmenityInput" class="input-field mt-2"
+                                placeholder="Enter custom amenity"
+                                style="display: none; width: 100%; box-sizing: border-box; margin-top: 8px;">
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button type="button" class="btn" style="background: #e2e8f0; color: #1e293b;"
+                                onclick="document.getElementById('roomModal').style.display='none'">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const btnCreate = document.getElementById('btnCreateRoom');
+                    const modal = document.getElementById('roomModal');
+                    const form = document.getElementById('roomForm');
+                    const modalTitle = document.getElementById('roomModalTitle');
+                    const layoutSelect = document.getElementById('roomLayout');
+                    const customLayoutInput = document.getElementById('customLayoutInput');
+                    const standardLayouts = ['Open Plan', 'Private Office', 'Boardroom', 'Classroom', 'U-Shape', 'Pods'];
+
+                    layoutSelect.addEventListener('change', (e) => {
+                        if (e.target.value === 'Other') {
+                            customLayoutInput.style.display = 'block';
+                            customLayoutInput.required = true;
+                        } else {
+                            customLayoutInput.style.display = 'none';
+                            customLayoutInput.required = false;
+                            customLayoutInput.value = '';
+                        }
+                    });
+
+                    const amenityOther = document.getElementById('amenityOther');
+                    const customAmenityInput = document.getElementById('customAmenityInput');
+
+                    if (amenityOther) {
+                        amenityOther.addEventListener('change', (e) => {
+                            if (e.target.checked) {
+                                customAmenityInput.style.display = 'block';
+                                customAmenityInput.required = true;
+                            } else {
+                                customAmenityInput.style.display = 'none';
+                                customAmenityInput.required = false;
+                                customAmenityInput.value = '';
+                            }
+                        });
+                    }
+
+                    if (btnCreate) {
+                        btnCreate.addEventListener('click', () => {
+                            form.reset();
+                            document.getElementById('roomId').value = '';
+                            layoutSelect.dispatchEvent(new Event('change'));
+                            if (amenityOther) amenityOther.dispatchEvent(new Event('change'));
+                            modalTitle.innerText = 'Create Room';
+                            modal.style.display = 'flex';
+                        });
+                    }
+
+                    document.querySelectorAll('.btn-edit-room').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            form.reset();
+                            const room = JSON.parse(e.target.getAttribute('data-room'));
+                            document.getElementById('roomId').value = room._id;
+                            document.getElementById('roomName').value = room.name;
+                            document.getElementById('roomDesc').value = room.description;
+                            document.getElementById('roomCapacity').value = room.capacity;
+
+                            const layout = room.layout || '';
+                            if (standardLayouts.includes(layout) || layout === '') {
+                                layoutSelect.value = layout || 'Open Plan';
+                                customLayoutInput.style.display = 'none';
+                                customLayoutInput.required = false;
+                                customLayoutInput.value = '';
+                            } else {
+                                layoutSelect.value = 'Other';
+                                customLayoutInput.style.display = 'block';
+                                customLayoutInput.required = true;
+                                customLayoutInput.value = layout;
+                            }
+
+                            const amenities = room.amenities || [];
+                            const standardAmenities = ['Power Outlets', 'WiFi', 'Desk Lamps', 'Whiteboard', 'Projector', 'Dual Monitors', 'Video Conferencing'];
+
+                            document.querySelectorAll('input[name="amenities"]').forEach(cb => {
+                                if (cb.value !== 'Other') {
+                                    cb.checked = amenities.includes(cb.value);
+                                }
+                            });
+
+                            const customAmenities = amenities.filter(a => !standardAmenities.includes(a));
+                            if (customAmenities.length > 0) {
+                                if (amenityOther) amenityOther.checked = true;
+                                if (customAmenityInput) {
+                                    customAmenityInput.style.display = 'block';
+                                    customAmenityInput.required = true;
+                                    customAmenityInput.value = customAmenities.join(', ');
+                                }
+                            } else {
+                                if (amenityOther) amenityOther.checked = false;
+                                if (customAmenityInput) {
+                                    customAmenityInput.style.display = 'none';
+                                    customAmenityInput.required = false;
+                                    customAmenityInput.value = '';
+                                }
+                            }
+
+                            modalTitle.innerText = 'Edit Room';
+                            modal.style.display = 'flex';
+                        });
+                    });
+
+                    document.querySelectorAll('.btn-delete-room').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            if (confirm('Are you sure you want to delete this room? This will also cancel all bookings for this room.')) {
+                                const id = e.target.getAttribute('data-room-id');
+                                try {
+                                    const res = await fetch(`/rooms/api/rooms/${id}`, { method: 'DELETE' });
+                                    if (res.ok) window.location.reload();
+                                    else alert('Failed to delete room');
+                                } catch (err) {
+                                    alert('Error deleting room');
+                                }
+                            }
+                        });
+                    });
+
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const id = document.getElementById('roomId').value;
+
+                        let layoutValue = layoutSelect.value;
+                        if (layoutValue === 'Other') {
+                            layoutValue = customLayoutInput.value;
+                        }
+
+                        let checkedAmenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked'))
+                            .filter(cb => cb.value !== 'Other')
+                            .map(cb => cb.value);
+
+                        const otherCheckbox = document.getElementById('amenityOther');
+                        if (otherCheckbox && otherCheckbox.checked) {
+                            const customVal = document.getElementById('customAmenityInput').value.trim();
+                            if (customVal) checkedAmenities.push(customVal);
+                        }
+
+                        const payload = {
+                            name: document.getElementById('roomName').value,
+                            description: document.getElementById('roomDesc').value,
+                            capacity: parseInt(document.getElementById('roomCapacity').value),
+                            layout: layoutValue,
+                            amenities: checkedAmenities
+                        };
+
+                        const url = id ? `/rooms/api/rooms/${id}` : '/rooms/api/rooms';
+                        const method = id ? 'PUT' : 'POST';
+
+                        try {
+                            const res = await fetch(url, {
+                                method,
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (res.ok) window.location.reload();
+                            else alert('Failed to save room');
+                        } catch (err) {
+                            alert('Error saving room');
+                        }
+                    });
+                });
+            </script>
+            <% } %>
 </body>
 
 </html>

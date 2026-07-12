@@ -5,6 +5,16 @@ const Booking = require('../models/Booking');
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
+function verifyAdmin(req, res, next) {
+  const user = (req.session && req.session.user) || {};
+  const role = user.role;
+  const campusId = user.campusId || '';
+  if (role === 'Admin' || campusId.startsWith('E')) {
+    return next();
+  }
+  return res.status(403).json({ error: '403 Forbidden' });
+}
+
 // Generates hourly time slots from 08:00 to 21:00
 function generateTimeSlots() {
   const slots = [];
@@ -480,6 +490,45 @@ router.get('/:id/bookings', async (req, res) => {
     console.error(err);
     req.flash('error', 'Could not load bookings.');
     res.redirect('/rooms');
+  }
+});
+
+// POST /api/rooms — Create a new room
+router.post('/api/rooms', verifyAdmin, async (req, res) => {
+  try {
+    const newRoom = await Room.create(req.body);
+    res.status(201).json(newRoom);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not create room' });
+  }
+});
+
+// PUT /api/rooms/:id — Update an existing room
+router.put('/api/rooms/:id', verifyAdmin, async (req, res) => {
+  try {
+    const updatedRoom = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedRoom) return res.status(404).json({ error: 'Room not found' });
+    res.json(updatedRoom);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update room' });
+  }
+});
+
+// DELETE /api/rooms/:id — Delete a room and its bookings
+router.delete('/api/rooms/:id', verifyAdmin, async (req, res) => {
+  try {
+    const deletedRoom = await Room.findByIdAndDelete(req.params.id);
+    if (!deletedRoom) return res.status(404).json({ error: 'Room not found' });
+    
+    // Cascade cancellation of bookings
+    await Booking.deleteMany({ room: req.params.id });
+    
+    res.json({ message: 'Room deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not delete room' });
   }
 });
 
