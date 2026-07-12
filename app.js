@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 
 const User = require('./models/User');
 const Question = require('./models/Question');
-
+const Notification = require('./models/Notification');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -193,9 +193,44 @@ app.get('/', async (req, res) => {
     }
     try {
         const user = await User.findById(req.session.user.id);
-        res.render('index', { profile: user });
+        
+        // 1. Fetch your notifications from MongoDB (sorted latest first)
+        const notifications = await mongoose.connection.db.collection('events').find().toArray();
+
+        // 2. Pass notifications to the EJS template alongside the user profile
+        res.render('index', { 
+            profile: user, 
+            notifications: notifications 
+        });
     } catch (err) {
         console.error('Dashboard Error:', err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+// Route to view a specific event's full details
+app.get('/events/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    
+    try {
+        const { ObjectId } = require('mongodb');
+        const eventId = req.params.id;
+
+        // Fetch the specific event matching the clicked ID directly from the events collection
+        const event = await mongoose.connection.db.collection('events').findOne({ _id: new ObjectId(eventId) });
+
+        if (!event) {
+            return res.status(404).send('Event not found');
+        }
+
+        // Render a detail view page and pass the event data to it
+        res.render('event-detail', { 
+            profile: req.session.user, 
+            event: event 
+        });
+    } catch (err) {
+        console.error('Error fetching event details:', err);
         res.status(500).send('Internal Server Error');
     }
 });

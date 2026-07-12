@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= event.title %> - Details</title>
+    <link rel="stylesheet" href="/css/style.css"> 
+</head>
+<body style="font-family: system-ui, sans-serif; background-color: #f8fafc; padding: 40px; margin: 0;">
+
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <a href="/" style="color: #0284c7; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 20px;">← Back to Dashboard</a>
+        
+        <h1 style="color: #0f172a; margin-top: 0; margin-bottom: 8px;"><%= event.title %></h1>
+        
+        <!-- Dedicated Event Details/Description Block -->
+        <div style="margin-top: 20px; margin-bottom: 24px;">
+            <h3 style="color: #334155; font-size: 16px; margin-bottom: 8px; font-weight: 600;">About the Event</h3>
+            <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0; background-color: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid #0284c7;">
+                <%= event.description %>
+            </p>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 20px;">
+        
+        <div style="display: flex; flex-direction: column; gap: 12px; color: #475569; font-size: 15px;">
+            <div>📅 <strong>Date:</strong> <%= event.date ? new Date(event.date).toLocaleDateString() : 'TBA' %></div>
+            <% if (event.location) { %>
+                <div>📍 <strong>Location:</strong> <%= event.location %></div>
+            <% } %>
+            <% if (event.organizer) { %>
+                <div>👤 <strong>Organized By:</strong> <%= event.organizer %></div>
+            <% } %>
+        </div>
+    </div>
+
+</body>
+</html>
