@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+<<<<<<< Updated upstream
 const NotificationSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -21,3 +22,30 @@ const NotificationSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Notification', NotificationSchema);
+=======
+const notificationSchema = new mongoose.Schema({
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    default: 'default'
+  },
+  isRead: {
+    type: Boolean,
+    default: false
+  }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Notification', notificationSchema);
+>>>>>>> Stashed changes

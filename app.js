@@ -186,6 +186,25 @@ app.use((req, res, next) => {
     next();
 });
 
+<<<<<<< Updated upstream
+=======
+app.post('/feedback/student', requireLogin, async (req, res) => {
+  try {
+    const { category, message } = req.body;
+    const date = new Date().toLocaleDateString('en-GB');
+    await Feedback.create({
+      category,
+      message,
+      date,
+      raisedBy: req.session.user.fullName,
+      raisedByRole: req.session.user.role
+    });
+    res.redirect('/feedback');
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    res.status(500).send("Internal Server Error");
+  }
+>>>>>>> Stashed changes
 // Auth routes
 app.get('/', async (req, res) => {
     if (!req.session.user) {
