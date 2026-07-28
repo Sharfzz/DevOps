@@ -15,6 +15,7 @@ const Question = require('./models/Question');
 const Feedback = require('./models/Feedback');
 const Ticket = require('./models/Ticket');
 const Notification = require('./models/Notification');
+const Event = require('./models/Event');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -28,6 +29,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+
+app.use('/events', require('./routes/events'));
 
 const academicModules = {
   "School of Infocomm": [

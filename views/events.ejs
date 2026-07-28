@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Campus Events</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: #f4f6f9; font-family: sans-serif; margin: 0; padding: 20px;">
+  <%- include('partials/navbar') %>
+
+  <div style="max-width: 800px; margin: 30px auto;">
+    <h2>📅 Campus Events & Announcements</h2>
+
+    <!-- Feed of Events from Database -->
+    <div style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+      <% if (typeof events !== 'undefined' && events.length > 0) { %>
+        <% events.forEach(event => { %>
+          <div style="padding: 15px 0; border-bottom: 1px solid #eee;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="margin: 0; color: #2c3e50;"><%= event.title %></h3>
+              <% if(event.isPinned) { %>
+                <span style="background: #ffeaa7; color: #d63031; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold;">Pinned</span>
+              <% } %>
+            </div>
+
+            <p style="margin: 8px 0; color: #555; font-size: 0.95rem;"><%= event.description %></p>
+            
+            <div style="font-size: 0.85rem; color: #7f8c8d; display: flex; gap: 15px;">
+              <span>📍 <strong>Location:</strong> <%= event.location || 'TBA' %></span>
+              <span>🏢 <strong>Organizer:</strong> <%= event.organizer || 'N/A' %></span>
+              <span>🗓️ <strong>Date:</strong> <%= new Date(event.date).toLocaleDateString() %></span>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p style="color: #888;">No events listed at the moment.</p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>
