@@ -101,28 +101,38 @@ jobs:
             fi
 
             # 6) Decide whether to use sudo for compose commands
-            # If ubuntu is already in docker group, sudo is not required for compose; otherwise use sudo.
-            if groups ubuntu | grep -qw docker; then
-            SUDO_PREFIX=()
+            # Test docker socket access directly; if sudo is required, use a helper function to avoid array concatenation issues
+            if docker info >/dev/null 2>&1; then
+            SUDO_REQUIRED="false"
+            echo "Docker socket accessible without sudo"
             else
-            SUDO_PREFIX=(sudo)
+            SUDO_REQUIRED="true"
+            echo "Using sudo for Docker Compose commands"
             fi
+
+            run_compose() {
+            if [ "$SUDO_REQUIRED" = "true" ]; then
+                sudo "${COMPOSE_CMD[@]}" "$@"
+            else
+                "${COMPOSE_CMD[@]}" "$@"
+            fi
+            }
 
             # 7) Cleanly stop and remove containers/volumes/orphans before rebuilding
             echo "Tearing down existing compose stack (best-effort)"
-            "${SUDO_PREFIX[@]}" "${COMPOSE_CMD[@]}" down --volumes --remove-orphans || echo "Warning: compose down failed, continuing"
+            run_compose down --volumes --remove-orphans || echo "Warning: compose down failed, continuing"
 
             # 8) Pull images and rebuild; tolerate pull/build failures but fail if up fails
             echo "Pulling images (if any)"
-            "${SUDO_PREFIX[@]}" "${COMPOSE_CMD[@]}" pull || echo "Warning: pull failed or no images to pull"
+            run_compose pull || echo "Warning: pull failed or no images to pull"
 
             echo "Starting compose up (build + detach)"
-            if "${SUDO_PREFIX[@]}" "${COMPOSE_CMD[@]}" up -d --build; then
+            if run_compose up -d --build; then
             echo "Compose up succeeded"
             else
             echo "ERROR: compose up failed; collecting diagnostics"
             echo "Compose version:"
-            "${SUDO_PREFIX[@]}" "${COMPOSE_CMD[@]}" version || true
+            run_compose version || true
             echo "Docker info:"
             sudo docker info || true
             echo "docker ps --all:"
@@ -132,6 +142,6 @@ jobs:
 
             # 9) Optional quick health check: list service containers
             echo "Services:"
-            "${SUDO_PREFIX[@]}" "${COMPOSE_CMD[@]}" ps || true
+            run_compose ps || true
 
             echo "Deploy finished: $(date)"
