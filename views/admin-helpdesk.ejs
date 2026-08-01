@@ -35,56 +35,134 @@
             <% if (!users || users.length === 0) { %>
                 <p class="no-data">No users found.</p>
             <% } else { %>
-                <div class="table-wrap">
-                    <table class="admin-table" id="usersTable">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Campus ID</th>
-                                <th>Role</th>
-                                <th>Registered</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% users.forEach(user => { %>
-                                <tr class="<%= user.manualResetRequested ? 'highlight-row' : '' %>">
-                                    <td class="user-name">
-                                        <%= user.fullName %>
-                                        <% if (user.manualResetRequested === true) { %>
-                                            <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="user-id"><%= user.campusId %></td>
-                                    <td>
-                                        <span class="role-badge <%= user.role === 'Admin' ? 'staff' : '' %>">
-                                            <%= user.role %>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <%= user.isRegistered ? 'Yes' : 'No' %>
-                                    </td>
-                                    <td>
-                                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; height: 100%;">
-                                            <% if (user.manualResetRequested === true) { %>
-                                                <form action="/admin/approve-reset" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
-                                                    <input type="hidden" name="targetUserId" value="<%= user._id %>">
-                                                    <button type="submit" class="btn-approve-reset" style="background-color: #ef4444; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">Approve Reset</button>
-                                                </form>
-                                            <% } %>
-                                            <form action="/admin/reset-user" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
-                                                <input type="hidden" name="targetUserId" value="<%= user._id %>">
-                                                <button type="submit" class="btn-regenerate" style="background-color: #0f172a; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">
-                                                    Admin Reset
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
+                <style>
+                    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+                    .tab-btn { padding: 8px 16px; border: none; background: transparent; cursor: pointer; border-radius: 6px; font-weight: 600; color: #64748b; transition: all 0.2s; }
+                    .tab-btn:hover { background: #f1f5f9; }
+                    .tab-btn.active { background: #0f172a; color: white; }
+                    .tab-pane { display: none; }
+                    .tab-pane.active { display: block; }
+                </style>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showTab(event, 'studentsTab')">Students</button>
+                    <button class="tab-btn" onclick="showTab(event, 'staffTab')">Staff / Admins</button>
                 </div>
+
+                <div id="studentsTab" class="tab-pane active">
+                    <div class="table-wrap">
+                        <table class="admin-table usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Campus ID</th>
+                                    <th>Role</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% students.forEach(user => { %>
+                                    <tr class="<%= user.manualResetRequested ? 'highlight-row' : '' %>">
+                                        <td class="user-name">
+                                            <%= user.fullName %>
+                                            <% if (user.manualResetRequested === true) { %>
+                                                <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="user-id"><%= user.campusId %></td>
+                                        <td>
+                                            <span class="role-badge <%= user.role === 'Admin' ? 'staff' : '' %>">
+                                                <%= user.role %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <%= user.isRegistered ? 'Yes' : 'No' %>
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; height: 100%;">
+                                                <% if (user.manualResetRequested === true) { %>
+                                                    <form action="/admin/approve-reset" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                        <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                        <button type="submit" class="btn-approve-reset" style="background-color: #ef4444; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">Approve Reset</button>
+                                                    </form>
+                                                <% } %>
+                                                <form action="/admin/reset-user" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                    <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                    <button type="submit" class="btn-regenerate" style="background-color: #0f172a; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">
+                                                        Admin Reset
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="staffTab" class="tab-pane">
+                    <div class="table-wrap">
+                        <table class="admin-table usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Campus ID</th>
+                                    <th>Role</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% staff.forEach(user => { %>
+                                    <tr class="<%= user.manualResetRequested ? 'highlight-row' : '' %>">
+                                        <td class="user-name">
+                                            <%= user.fullName %>
+                                            <% if (user.manualResetRequested === true) { %>
+                                                <span style="background-color: #feebc8; color: #c05621; font-size: 0.75em; padding: 2px 6px; border-radius: 12px; margin-left: 8px; font-weight: 600;">Reset Requested</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="user-id"><%= user.campusId %></td>
+                                        <td>
+                                            <span class="role-badge <%= user.role === 'Admin' ? 'staff' : '' %>">
+                                                <%= user.role %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <%= user.isRegistered ? 'Yes' : 'No' %>
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; height: 100%;">
+                                                <% if (user.manualResetRequested === true) { %>
+                                                    <form action="/admin/approve-reset" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                        <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                        <button type="submit" class="btn-approve-reset" style="background-color: #ef4444; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">Approve Reset</button>
+                                                    </form>
+                                                <% } %>
+                                                <form action="/admin/reset-user" method="POST" style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center; height: fit-content;">
+                                                    <input type="hidden" name="targetUserId" value="<%= user._id %>">
+                                                    <button type="submit" class="btn-regenerate" style="background-color: #0f172a; color: white; margin: 0 !important; padding: 0 16px; border-radius: 6px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 36px;">
+                                                        Admin Reset
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <script>
+                    function showTab(event, tabId) {
+                        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+                        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+                        document.getElementById(tabId).classList.add('active');
+                        event.currentTarget.classList.add('active');
+                    }
+                </script>
             <% } %>
         </div>
     </div>
@@ -173,7 +251,7 @@
     <script>
         document.getElementById('searchInput')?.addEventListener('keyup', function() {
             const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const rows = document.querySelectorAll('.usersTable tbody tr');
 
             rows.forEach(row => {
                 const name = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
