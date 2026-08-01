@@ -25,101 +25,99 @@ jobs:
 
             # 1) Ensure project dir exists
             if [ ! -d /home/ubuntu/DevOps ]; then
-            echo "ERROR: /home/ubuntu/DevOps not found"
-            exit 1
+              echo "ERROR: /home/ubuntu/DevOps not found"
+              exit 1
             fi
             cd /home/ubuntu/DevOps
 
             # 2) Update to match remote main (non-interactive, deterministic) with retries
             git_retry=0
             until [ $git_retry -ge 3 ]; do
-            if git fetch --all --prune && git reset --hard origin/main; then
+              if git fetch --all --prune && git reset --hard origin/main; then
                 echo "git update succeeded"
                 break
-            fi
-            git_retry=$((git_retry+1))
-            echo "git update failed, retrying ($git_retry/3)..."
-            sleep 2
+              fi
+              git_retry=$((git_retry+1))
+              echo "git update failed, retrying ($git_retry/3)..."
+              sleep 2
             done
             if [ $git_retry -ge 3 ]; then
-            echo "ERROR: git update failed after retries"
-            exit 1
+              echo "ERROR: git update failed after retries"
+              exit 1
             fi
 
             # 3) Ensure Docker daemon is responsive (attempt start if not)
             if ! sudo docker info >/dev/null 2>&1; then
-            echo "Docker daemon not responding, attempting systemctl start docker"
-            sudo systemctl start docker || true
-            sleep 2
-            if ! sudo docker info >/dev/null 2>&1; then
+              echo "Docker daemon not responding, attempting systemctl start docker"
+              sudo systemctl start docker || true
+              sleep 2
+              if ! sudo docker info >/dev/null 2>&1; then
                 echo "ERROR: docker daemon is not available"
                 exit 1
-            fi
+              fi
             fi
 
             # 4) Detect or install a Docker Compose client (prefer `docker compose` plugin)
             COMPOSE_CMD=""
             if sudo docker compose version >/dev/null 2>&1; then
-            COMPOSE_CMD="docker compose"
-            echo "Using: docker compose (v2 plugin)"
+              COMPOSE_CMD="docker compose"
+              echo "Using: docker compose (v2 plugin)"
             elif command -v docker-compose >/dev/null 2>&1; then
-            COMPOSE_CMD="docker-compose"
-            echo "Using: docker-compose (legacy binary)"
+              COMPOSE_CMD="docker-compose"
+              echo "Using: docker-compose (legacy binary)"
             else
-            echo "No compose client found. Attempting to install docker-compose-plugin via apt"
-            sudo apt-get update -y && sudo apt-get install -y docker-compose-plugin || true
-            if sudo docker compose version >/dev/null 2>&1; then
+              echo "No compose client found. Attempting to install docker-compose-plugin via apt"
+              sudo apt-get update -y && sudo apt-get install -y docker-compose-plugin || true
+              if sudo docker compose version >/dev/null 2>&1; then
                 COMPOSE_CMD="docker compose"
                 echo "Installed and using docker compose (v2 plugin)"
-            else
+              else
                 echo "Attempting to install standalone docker-compose v2 binary to /usr/local/bin/docker-compose"
                 sudo curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose || true
                 sudo chmod +x /usr/local/bin/docker-compose || true
                 if command -v docker-compose >/dev/null 2>&1; then
-                COMPOSE_CMD="docker-compose"
-                echo "Installed and using docker-compose binary"
+                  COMPOSE_CMD="docker-compose"
+                  echo "Installed and using docker-compose binary"
                 fi
-            fi
+              fi
             fi
 
             if [ -z "${COMPOSE_CMD}" ]; then
-            echo "ERROR: no Docker Compose client available after attempted installs"
-            exit 1
+              echo "ERROR: no Docker Compose client available after attempted installs"
+              exit 1
             fi
 
             # 5) Ensure ubuntu user can run docker; add to docker group (best-effort)
             if ! groups ubuntu | grep -qw docker; then
-            echo "Adding ubuntu user to docker group (may require relogin to take effect)"
-            sudo usermod -aG docker ubuntu || true
+              echo "Adding ubuntu user to docker group (may require relogin to take effect)"
+              sudo usermod -aG docker ubuntu || true
             fi
 
             # 6) Use sudo for compose commands to avoid permission issues if group not yet active
-            SUDO_PREFIX="sudo"
-
             # 7) Cleanly stop and remove containers/volumes/orphans before rebuilding to avoid stale metadata issues
             echo "Tearing down existing compose stack (best-effort)"
-            $SUDO_PREFIX $COMPOSE_CMD down --volumes --remove-orphans || echo "Warning: compose down failed, continuing"
+            sudo $COMPOSE_CMD down --volumes --remove-orphans || echo "Warning: compose down failed, continuing"
 
             # 8) Pull images and rebuild; tolerate pull/build failures but fail if up fails
             echo "Pulling images (if any)"
-            $SUDO_PREFIX $COMPOSE_CMD pull || echo "Warning: pull failed or no images to pull"
+            sudo $COMPOSE_CMD pull || echo "Warning: pull failed or no images to pull"
 
             echo "Starting compose up (build + detach)"
-            if $SUDO_PREFIX $COMPOSE_CMD up -d --build; then
-            echo "Compose up succeeded"
+            if sudo $COMPOSE_CMD up -d --build; then
+              echo "Compose up succeeded"
             else
-            echo "ERROR: compose up failed; collecting diagnostics"
-            echo "Compose version:"
-            $SUDO_PREFIX $COMPOSE_CMD version || true
-            echo "Docker info:"
-            sudo docker info || true
-            echo "docker ps --all:"
-            sudo docker ps -a || true
-            exit 1
+              echo "ERROR: compose up failed; collecting diagnostics"
+              echo "Compose version:"
+              sudo $COMPOSE_CMD version || true
+              echo "Docker info:"
+              sudo docker info || true
+              echo "docker ps --all:"
+              sudo docker ps -a || true
+              exit 1
             fi
 
             # 9) Optional quick health check: list service containers
             echo "Services:"
-            $SUDO_PREFIX $COMPOSE_CMD ps || true
+            sudo $COMPOSE_CMD ps || true
 
             echo "Deploy finished: $(date)"
