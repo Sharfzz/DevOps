@@ -28,6 +28,9 @@ jobs:
             # Pull the newest code from your GitHub main branch
             git pull origin main
             
+            # Upgrade docker-compose to fix ContainerConfig bug
+            sudo pip install --upgrade docker-compose
+
             # Add user to docker group (if not already)
             sudo usermod -aG docker ubuntu
             
@@ -35,4 +38,3 @@ jobs:
             newgrp docker <<EOF
             docker-compose up -d --build
             EOF
-            
