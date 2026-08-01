@@ -404,7 +404,9 @@ app.post('/request-it-reset', async (req, res) => {
 
 app.get('/force-password-update', (req, res) => {
   if (!req.session.forceUpdateUserId) return res.redirect('/login');
-  res.render('force-password-update');
+  const securityMessage = req.session.securityMessage;
+  req.session.securityMessage = null;
+  res.render('force-password-update', { securityMessage });
 });
 
 app.post('/force-password-update', async (req, res) => {
@@ -413,6 +415,9 @@ app.post('/force-password-update', async (req, res) => {
     const { newPassword, confirmPassword } = req.body;
     if (newPassword !== confirmPassword) {
       return res.status(400).send('Passwords do not match');
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).send('New password must be at least 8 characters long.');
     }
     const user = await User.findById(req.session.forceUpdateUserId);
     if (!user) return res.status(404).send('User not found');
@@ -601,6 +606,12 @@ app.post('/login', async (req, res) => {
         resetSuccess: '',
         campusId
       });
+    }
+
+    if (password.length < 8) {
+      req.session.forceUpdateUserId = user._id;
+      req.session.securityMessage = 'For enhanced security, Campus Hub now requires all accounts to use a password of at least 8 characters. Please upgrade your password to access the portal.';
+      return res.redirect('/force-password-update');
     }
 
     req.session.user = {
