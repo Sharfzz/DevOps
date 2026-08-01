@@ -28,5 +28,8 @@ jobs:
             # Pull the newest code from your GitHub main branch
             git pull origin main
             
-            # Rebuild and restart the Docker containers in the background
-            sudo systemctl start docker || true sudo docker-compose up -d --build
+            # Ensure Docker is running
+            sudo systemctl enable --now docker
+
+            # Run docker-compose as root
+            sudo docker-compose up -d --build
