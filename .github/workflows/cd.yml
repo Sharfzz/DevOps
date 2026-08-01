@@ -1,0 +1,32 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 2. The Deployment Action
+      # We use a pre-built action called "ssh-action" by appleboy.
+      # It securely logs into your server exactly like you would from your terminal.
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          
+          # 3. The Script: The exact commands the runner will type into your server
+          script: |
+            # Navigate to where your project lives on the server
+            cd /home/ubuntu/DevOps
+            
+            # Pull the newest code from your GitHub main branch
+            git pull origin main
+            
+            # Rebuild and restart the Docker containers in the background
+            docker-compose up -d --build
