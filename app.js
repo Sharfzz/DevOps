@@ -26,7 +26,8 @@ app.use(express.json());
 app.use(session({
   secret: process.env.SESSIONSECRET || 'campus-portal-secret',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { maxAge: 15 * 60 * 1000 }
 }));
 
 const academicModules = {
@@ -441,11 +442,13 @@ app.get('/admin/helpdesk', async (req, res) => {
   }
   try {
     const users = await User.find({}).sort({ manualResetRequested: -1, createdAt: -1 });
+    const students = users.filter(u => u.role === 'Student');
+    const staff = users.filter(u => u.role !== 'Student');
     const generatedPin = req.session.generatedPin;
     const generatedPinUser = req.session.generatedPinUser;
     req.session.generatedPin = null;
     req.session.generatedPinUser = null;
-    res.render('admin-helpdesk', { users, generatedPin, generatedPinUser });
+    res.render('admin-helpdesk', { users, students, staff, generatedPin, generatedPinUser });
   } catch (err) {
     console.error('Admin Fetch Users Error:', err);
     res.status(500).send('Internal Server Error');
