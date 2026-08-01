@@ -28,8 +28,11 @@ jobs:
             # Pull the newest code from your GitHub main branch
             git pull origin main
             
-            # Ensure Docker is running
-            sudo systemctl enable --now docker
-
-            # Run docker-compose as root
-            sudo docker-compose up -d --build
+            # Add user to docker group (if not already)
+            sudo usermod -aG docker ubuntu
+            
+            # Apply group changes (or use newgrp in next line)
+            newgrp docker <<EOF
+            docker-compose up -d --build
+            EOF
+            
