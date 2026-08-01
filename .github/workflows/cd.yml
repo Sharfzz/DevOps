@@ -25,36 +25,36 @@ jobs:
 
             # 1) Ensure project dir exists
             if [ ! -d /home/ubuntu/DevOps ]; then
-              echo "ERROR: /home/ubuntu/DevOps not found"
-              exit 1
+            echo "ERROR: /home/ubuntu/DevOps not found"
+            exit 1
             fi
             cd /home/ubuntu/DevOps
 
             # 2) Update to match remote main (non-interactive, deterministic) with retries
             git_retry=0
             until [ $git_retry -ge 3 ]; do
-              if git fetch --all --prune && git reset --hard origin/main; then
+            if git fetch --all --prune && git reset --hard origin/main; then
                 echo "git update succeeded"
                 break
-              fi
-              git_retry=$((git_retry+1))
-              echo "git update failed, retrying ($git_retry/3)..."
-              sleep 2
+            fi
+            git_retry=$((git_retry+1))
+            echo "git update failed, retrying ($git_retry/3)..."
+            sleep 2
             done
             if [ $git_retry -ge 3 ]; then
-              echo "ERROR: git update failed after retries"
-              exit 1
+            echo "ERROR: git update failed after retries"
+            exit 1
             fi
 
             # 3) Ensure Docker daemon is responsive (attempt start if not)
             if ! sudo docker info >/dev/null 2>&1; then
-              echo "Docker daemon not responding, attempting systemctl start docker"
-              sudo systemctl start docker || true
-              sleep 2
-              if ! sudo docker info >/dev/null 2>&1; then
+            echo "Docker daemon not responding, attempting systemctl start docker"
+            sudo systemctl start docker || true
+            sleep 2
+            if ! sudo docker info >/dev/null 2>&1; then
                 echo "ERROR: docker daemon is not available"
                 exit 1
-              fi
+            fi
             fi
 
             # 4) Detect or install a Docker Compose client (prefer `docker compose` plugin)
