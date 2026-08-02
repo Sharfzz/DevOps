@@ -106,13 +106,39 @@
             margin-bottom: 1.25rem;
         }
 
+        .field label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+        }
+
         .field input,
         .field select,
         .field textarea {
             width: 100%;
-            padding: 0.65rem;
-            border: 1px solid var(--border);
+            padding: 0.75rem 0.9rem;
+            background-color: #F8FAFC;
+            border: 1px solid #CBD5E1;
             border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .field input::placeholder,
+        .field textarea::placeholder {
+            color: #94A3B8;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            background-color: #FFFFFF;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
         .btn-submit {
@@ -123,6 +149,37 @@
             border-radius: 8px;
             padding: 0.8rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #374151;
+        }
+
+        .submit-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .helper-text {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .char-counter {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.35rem;
         }
 
         .ticket-item {
@@ -136,8 +193,11 @@
         .badge {
             font-size: 0.75rem;
             font-weight: 600;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.7rem;
             border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
         }
 
         .badge.priority-high {
@@ -145,15 +205,453 @@
             color: var(--priority-high);
         }
 
+        .badge.status-open {
+            background-color: var(--status-open-bg);
+            color: var(--status-open);
+        }
+
+        .badge.status-progress {
+            background-color: var(--status-progress-bg);
+            color: var(--status-progress);
+        }
+
         .badge.status-resolved {
             background-color: var(--status-resolved-bg);
             color: var(--status-resolved);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .ticket-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .ticket-route {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.4rem;
+        }
+
+        .ticket-route svg {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .btn-pill {
+            border: none;
+            border-radius: 9999px;
+            padding: 0.45rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+        }
+
+        .btn-pill-accept {
+            background-color: var(--accent);
+        }
+
+        .btn-pill-accept:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-pill-complete {
+            background-color: #10B981;
+        }
+
+        .btn-pill-complete:hover {
+            background-color: #059669;
         }
 
         .empty-state {
             text-align: center;
             color: var(--text-muted);
             padding: 2rem 0;
+        }
+
+        .stacked-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .info-card {
+            background-color: #F8FAFC;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .guideline-list {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .guideline-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .guideline-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .contact-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .contact-icon {
+            width: 22px;
+            height: 22px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .faq-section {
+            margin-top: 3.5rem;
+        }
+
+        .faq-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .accordion {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .accordion details {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .accordion details:hover {
+            border-color: #D1D5DB;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .accordion details[open] {
+            background-color: var(--surface);
+            border-color: #D1D5DB;
+            padding-bottom: 1.5rem;
+        }
+
+        .accordion summary {
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            outline: none;
+            user-select: none;
+        }
+
+        .accordion summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .accordion summary::after {
+            content: '+';
+            font-size: 1.35rem;
+            font-weight: 400;
+            color: var(--accent);
+            transition: transform 0.25s ease;
+            line-height: 1;
+        }
+
+        .accordion details[open] summary::after {
+            transform: rotate(45deg);
+            color: var(--text-muted);
+        }
+
+        .accordion details[open] summary {
+            margin-bottom: 0.85rem;
+            border-bottom: 1px solid var(--nav-border);
+            padding-bottom: 0.85rem;
+        }
+
+        .accordion-content {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .empty-state-card {
+            border: 2px dashed #CBD5E1;
+            background-color: #F8FAFC;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .resolved-accordion {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background-color: var(--bg-primary);
+            padding: 1rem 1.25rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .resolved-accordion[open] {
+            background-color: var(--surface);
+            padding-bottom: 1.25rem;
+        }
+
+        .resolved-accordion summary {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            outline: none;
+            user-select: none;
+        }
+
+        .resolved-accordion summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .resolved-accordion summary::after {
+            content: '+';
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: var(--accent);
+            transition: transform 0.25s ease;
+        }
+
+        .resolved-accordion[open] summary::after {
+            transform: rotate(45deg);
+            color: var(--text-muted);
+        }
+
+        .resolved-accordion[open] summary {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--nav-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .resolved-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .search-container .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        #searchInput {
+            width: 100%;
+            background-color: #F9FAFB;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            padding: 0.8rem 1rem 0.8rem 2.75rem;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        #searchInput::placeholder {
+            color: #94A3B8;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            background-color: #FFFFFF;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .feedback-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .feedback-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-academics {
+            background-color: #EFF6FF;
+            color: #1E40AF;
+        }
+
+        .badge-facilities {
+            background-color: #ECFDF5;
+            color: #047857;
+        }
+
+        .badge-general {
+            background-color: #F3F4F6;
+            color: #374151;
+        }
+
+        .feedback-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .feedback-message {
+            font-size: 0.95rem;
+            color: #374151;
+            line-height: 1.5;
+            margin: 0 0 0.85rem 0;
+        }
+
+        .feedback-footer {
+            font-size: 0.8rem;
+            color: #6B7280;
+            border-top: 1px solid #F3F4F6;
+            padding-top: 0.75rem;
+        }
+
+        .feedback-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .feedback-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .feedback-scroll-container::-webkit-scrollbar-track {
+            background: #F3F4F6;
+            border-radius: 8px;
+        }
+
+        .feedback-scroll-container::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 8px;
+        }
+
+        .feedback-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+
+        .filter-select {
+            background-color: #F9FAFB;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: #374151;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
     </style>
 </head>
@@ -178,6 +676,7 @@
                         <form action="/feedback/student" method="POST">
                             <div class="field">
                                 <label>Category</label>
+                                <div class="helper-text">Select the area your feedback relates to.</div>
                                 <select name="category" required>
                                     <option value="Academics">Academics</option>
                                     <option value="Facilities">Facilities</option>
@@ -186,75 +685,232 @@
                             </div>
                             <div class="field">
                                 <label>Your Feedback</label>
-                                <textarea name="message" required></textarea>
+                                <textarea id="feedback-message" name="message" rows="5" maxlength="500" placeholder="E.g., I would love to see a new Recreation Hub with arcade games for students..." required></textarea>
+                                <div class="char-counter" id="char-count">0 / 500 characters</div>
                             </div>
-                            <button class="btn-submit" type="submit">Submit Feedback</button>
+                            <button class="btn-submit" type="submit">
+                                <span>Submit Feedback</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="submit-icon">
+                                    <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                                </svg>
+                            </button>
                         </form>
                     </div>
                     <div>
                         <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
                             <h3 class="list-section-title">Recent Feedback (Admin View)</h3>
-                            <% feedbackList.slice().reverse().forEach(item=> { %>
-                                <div class="feedback-item">
-                                    <%= item.message %> (<%= item.category %>)
-                                </div>
+                            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                                <select id="adminCategoryFilter" class="filter-select">
+                                    <option value="all">All Categories</option>
+                                    <option value="Academics">Academics</option>
+                                    <option value="Facilities">Facilities</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                            <div class="feedback-scroll-container">
+                                 <% feedbackList.slice().reverse().forEach(item=> { %>
+                                    <div class="feedback-card admin-filterable-card searchable-item" data-category="<%= item.category %>">
+                                        <div class="feedback-header">
+                                            <span class="category-badge badge-<%= item.category.toLowerCase() %>"><%= item.category %></span>
+                                            <span class="feedback-date"><%= item.date %></span>
+                                        </div>
+                                        <p class="feedback-message"><%= item.message %></p>
+                                        <div class="feedback-footer">
+                                            <% if (item.raisedBy && item.raisedBy !== '') { %>
+                                                Submitted by: <%= item.raisedBy %> (<%= item.raisedByRole %>)
+                                            <% } else { %>
+                                                Submitted by: Anonymous
+                                            <% } %>
+                                        </div>
+                                    </div>
                                 <% }) %>
-                                    <% } else { %>
-                                        <h3 class="list-section-title">Feedback Privacy</h3>
-                                        <p>Feedback logs are not visible to students.</p>
+                            </div>
+                        <% } else { %>
+                                        <div class="stacked-cards">
+                                            <div class="card info-card">
+                                                <h3 class="card-title">Feedback Guidelines</h3>
+                                                <ul class="guideline-list">
+                                                    <li>Be specific about the location</li>
+                                                    <li>Provide constructive suggestions</li>
+                                                    <li>Include relevant context or details</li>
+                                                </ul>
+                                            </div>
+                                            <div class="card info-card">
+                                                <h3 class="card-title">Quick Campus Contacts</h3>
+                                                <ul class="contact-list">
+                                                    <li>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="contact-icon">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m-9 0V4.875c0-.621.504-1.125 1.125-1.125h11.75c.621 0 1.125.504 1.125 1.125v12.375m-14.25 0h14.25" />
+                                                        </svg>
+                                                        <span><strong>IT Helpdesk</strong> (Operating Hours: 8am - 6pm)</span>
+                                                    </li>
+                                                    <li>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="contact-icon">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                                                        </svg>
+                                                        <span><strong>Facilities Management</strong> (e.g., Block 43 Maintenance)</span>
+                                                    </li>
+                                                    <li>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="contact-icon">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.905 59.905 0 0 1 12 3.493a59.902 59.902 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                                                        </svg>
+                                                        <span><strong>Student Services</strong></span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                         <% } %>
+                    </div>
+                </div>
+
+                <div class="faq-section">
+                    <h2>Commonly Asked Questions</h2>
+                    <div class="accordion">
+                        <details>
+                            <summary>How long does it take for my feedback to be reviewed?</summary>
+                            <div class="accordion-content">
+                                <p>Our campus administration team reviews incoming feedback daily on regular business days. You can generally expect an evaluation or relevant routing within 1 to 2 working days.</p>
+                            </div>
+                        </details>
+                        <details>
+                            <summary>Can I submit anonymous feedback?</summary>
+                            <div class="accordion-content">
+                                <p>Yes, if you prefer not to include identifiable details within your message, your submission is evaluated solely on the content and location provided without displaying personal data in student logs.</p>
+                            </div>
+                        </details>
+                        <details>
+                            <summary>What should I do if my feedback requires urgent maintenance or emergency attention?</summary>
+                            <div class="accordion-content">
+                                <p>For urgent facility maintenance or critical campus issues, please switch to the "Maintenance Tickets" tab to submit a prioritized ticket directly to the facilities operations desk, or call Campus Security for emergencies.</p>
+                            </div>
+                        </details>
                     </div>
                 </div>
             </div>
 
             <div class="tab-panel" id="ticket-panel">
+                <div class="search-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="search-icon">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search tickets, locations, or descriptions...">
+                </div>
                 <div class="grid-two">
                     <div class="card">
                         <h2>Raise a Ticket</h2>
                         <form action="/feedback/ticket" method="POST">
                             <div class="field">
                                 <label>Issue Title</label>
-                                <input type="text" name="title" required>
+                                <input type="text" name="title" placeholder="E.g., Broken Light Fixture" required>
                             </div>
                             <div class="field">
                                 <label>Location</label>
-                                <input type="text" name="location" required>
+                                <input type="text" name="location" placeholder="E.g., Block 43, Level 2, Room 4" required>
+                            </div>
+                            <div class="field">
+                                <label>Priority</label>
+                                <select name="priority" required>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
                             </div>
                             <div class="field">
                                 <label>Description</label>
-                                <textarea name="description" required></textarea>
+                                <textarea name="description" rows="5" placeholder="Provide details about the maintenance issue..." required></textarea>
                             </div>
-                            <button class="btn-submit" type="submit">Submit Ticket</button>
+                            <button class="btn-submit" type="submit">
+                                <span>Submit Ticket</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="submit-icon">
+                                    <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                                </svg>
+                            </button>
                         </form>
                     </div>
                     <div>
                         <h3>
                             <%= (user.role==='Admin' || user.role==='Staff' ) ? 'All Tickets' : 'Your Tickets' %>
                         </h3>
-                        <% tickets.forEach(t=> { %>
-                            <div class="ticket-item">
-                                <p><strong>
-                                        <%= t.title %>
-                                    </strong> - <%= t.status %>
-                                </p>
-                                <p>Routed to: <%= t.assignedTo %>
-                                </p>
+                        <% const activeTickets = tickets.filter(t => t.status !== 'Resolved'); %>
+                        <% const resolvedTickets = tickets.filter(t => t.status === 'Resolved'); %>
 
-                                <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
-                                    <% if (t.raisedBy !==user.fullName) { %>
-                                        <div style="margin-top: 1rem;">
-                                            <form action="/feedback/ticket/status/<%= t._id %>" method="POST">
-                                                <input type="hidden" name="action"
-                                                    value="<%= t.status === 'Open' ? 'accept' : 'complete' %>">
-                                                <button type="submit">
-                                                    <%= t.status==='Open' ? 'Accept' : 'Complete' %>
-                                                </button>
-                                            </form>
+                        <div style="margin-top: 1.5rem;">
+                            <div class="section-subtitle">Active Tickets</div>
+                            <% if (activeTickets.length === 0) { %>
+                                <div class="empty-state-card">No active tickets</div>
+                            <% } else { %>
+                                <% activeTickets.forEach(t=> { %>
+                                    <div class="ticket-item searchable-item">
+                                        <div class="ticket-header">
+                                            <div class="ticket-title">
+                                                <%= t.title %>
+                                            </div>
+                                            <span class="badge <%= t.status === 'Open' ? 'status-open' : (t.status === 'Resolved' ? 'status-resolved' : 'status-progress') %>"><%= t.status %></span>
                                         </div>
-                                        <% } %>
-                                            <% } %>
+                                        <div class="ticket-route">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 1.75A.75.75 0 0 1 4.75 1h10.5a.75.75 0 0 1 .75.75v16.5a.75.75 0 0 1-.75.75H4.75a.75.75 0 0 1-.75-.75V1.75ZM5.5 2.5v15h9v-15h-9ZM6.5 4.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM7.25 7a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5ZM6.5 10.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM11.25 4a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5ZM10.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM11.25 10a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5Z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span>Routed to: <%= t.assignedTo %></span>
+                                        </div>
+
+                                        <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                                            <% if (t.raisedBy !==user.fullName) { %>
+                                                <div style="margin-top: 1rem;">
+                                                    <form action="/feedback/ticket/status/<%= t._id %>" method="POST">
+                                                        <input type="hidden" name="action"
+                                                            value="<%= t.status === 'Open' ? 'accept' : 'complete' %>">
+                                                        <button type="submit" class="btn-pill <%= t.status === 'Open' ? 'btn-pill-accept' : 'btn-pill-complete' %>">
+                                                            <%= t.status==='Open' ? 'Accept' : 'Complete' %>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <% } %>
+                                                    <% } %>
+                                    </div>
+                                <% }) %>
+                            <% } %>
+                        </div>
+
+                        <details class="resolved-accordion" style="margin-top: 2rem;">
+                            <summary>Resolved History</summary>
+                            <div class="resolved-content">
+                                <% if (resolvedTickets.length === 0) { %>
+                                    <div class="empty-state-card" style="margin-bottom: 0;">No resolved tickets</div>
+                                <% } else { %>
+                                    <% resolvedTickets.forEach(t=> { %>
+                                        <div class="ticket-item searchable-item" style="margin-bottom: 0;">
+                                            <div class="ticket-header">
+                                                <div class="ticket-title">
+                                                    <%= t.title %>
+                                                </div>
+                                                <span class="badge <%= t.status === 'Open' ? 'status-open' : (t.status === 'Resolved' ? 'status-resolved' : 'status-progress') %>"><%= t.status %></span>
+                                            </div>
+                                            <div class="ticket-route">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4 1.75A.75.75 0 0 1 4.75 1h10.5a.75.75 0 0 1 .75.75v16.5a.75.75 0 0 1-.75.75H4.75a.75.75 0 0 1-.75-.75V1.75ZM5.5 2.5v15h9v-15h-9ZM6.5 4.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM7.25 7a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5ZM6.5 10.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM11.25 4a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5ZM10.5 7.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM11.25 10a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5h-1.5Z" clip-rule="evenodd" />
+                                                </svg>
+                                                <span>Routed to: <%= t.assignedTo %></span>
+                                            </div>
+
+                                            <% if (user && (user.role==='Admin' || user.role==='Staff' )) { %>
+                                                <% if (t.raisedBy !==user.fullName) { %>
+                                                    <div style="margin-top: 1rem;">
+                                                        <form action="/feedback/ticket/status/<%= t._id %>" method="POST">
+                                                            <input type="hidden" name="action"
+                                                                value="<%= t.status === 'Open' ? 'accept' : 'complete' %>">
+                                                            <button type="submit" class="btn-pill <%= t.status === 'Open' ? 'btn-pill-accept' : 'btn-pill-complete' %>">
+                                                                <%= t.status==='Open' ? 'Accept' : 'Complete' %>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <% } %>
+                                                        <% } %>
+                                        </div>
+                                    <% }) %>
+                                <% } %>
                             </div>
-                            <% }) %>
+                        </details>
                     </div>
                 </div>
             </div>
@@ -276,6 +932,43 @@
                         activateTab(btn.dataset.tab);
                     });
                 });
+
+                const msgTextarea = document.getElementById('feedback-message');
+                const charCountDisplay = document.getElementById('char-count');
+                if (msgTextarea && charCountDisplay) {
+                    msgTextarea.addEventListener('input', () => {
+                        const currentLength = msgTextarea.value.length;
+                        charCountDisplay.textContent = `${currentLength} / 500 characters`;
+                    });
+                }
+
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        const filterText = e.target.value.toLowerCase().trim();
+                        document.querySelectorAll('.searchable-item').forEach(item => {
+                            if (item.textContent.toLowerCase().includes(filterText)) {
+                                item.style.display = '';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+
+                const adminCategoryFilter = document.getElementById('adminCategoryFilter');
+                if (adminCategoryFilter) {
+                    adminCategoryFilter.addEventListener('change', (e) => {
+                        const selectedVal = e.target.value;
+                        document.querySelectorAll('.admin-filterable-card').forEach(card => {
+                            if (selectedVal === 'all' || card.dataset.category === selectedVal) {
+                                card.style.display = '';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                }
             });
         </script>
 </body>
