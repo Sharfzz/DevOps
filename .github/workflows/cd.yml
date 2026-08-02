@@ -1,0 +1,147 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+
+          script: |
+            #!/usr/bin/env bash
+            # This script is intended to run on the remote host via the SSH action.
+            # It forces re-exec under bash if the remote SSH shell is /bin/sh.
+            if [ -z "${BASH_VERSION:-}" ]; then
+            exec /bin/bash "$0" "$@"
+            fi
+
+            set -euo pipefail
+            IFS=$'\n\t'
+
+            echo "Starting remote deploy: $(date)"
+
+            # 1) Ensure project dir exists
+            if [ ! -d /home/ubuntu/DevOps ]; then
+            echo "ERROR: /home/ubuntu/DevOps not found"
+            exit 1
+            fi
+            cd /home/ubuntu/DevOps
+
+            # 2) Update to match remote main (non-interactive, deterministic) with retries
+            git_retry=0
+            until [ $git_retry -ge 3 ]; do
+            if git fetch --all --prune && git reset --hard origin/main; then
+                echo "git update succeeded"
+                break
+            fi
+            git_retry=$((git_retry+1))
+            echo "git update failed, retrying ($git_retry/3)..."
+            sleep 2
+            done
+            if [ $git_retry -ge 3 ]; then
+            echo "ERROR: git update failed after retries"
+            exit 1
+            fi
+
+            # 3) Ensure Docker daemon is responsive (attempt start if not)
+            if ! sudo docker info >/dev/null 2>&1; then
+            echo "Docker daemon not responding, attempting systemctl start docker"
+            sudo systemctl start docker || true
+            sleep 2
+            if ! sudo docker info >/dev/null 2>&1; then
+                echo "ERROR: docker daemon is not available"
+                exit 1
+            fi
+            fi
+
+            # 4) Detect or install a Docker Compose client (prefer `docker compose` plugin)
+            COMPOSE_CMD=()
+            if sudo docker compose version >/dev/null 2>&1; then
+            COMPOSE_CMD=(docker compose)
+            echo "Using: docker compose (v2 plugin)"
+            elif command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_CMD=(docker-compose)
+            echo "Using: docker-compose (legacy binary)"
+            else
+            echo "No compose client found. Attempting to install docker-compose-plugin via apt"
+            sudo apt-get update -y && sudo apt-get install -y docker-compose-plugin || true
+            if sudo docker compose version >/dev/null 2>&1; then
+                COMPOSE_CMD=(docker compose)
+                echo "Installed and using docker compose (v2 plugin)"
+            else
+                echo "Attempting to install standalone docker-compose v2 binary to /usr/local/bin/docker-compose"
+                sudo curl -SL "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose || true
+                sudo chmod +x /usr/local/bin/docker-compose || true
+                if command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE_CMD=(docker-compose)
+                echo "Installed and using docker-compose binary"
+                fi
+            fi
+            fi
+
+            if [ ${#COMPOSE_CMD[@]} -eq 0 ]; then
+            echo "ERROR: no Docker Compose client available after attempted installs"
+            exit 1
+            fi
+
+            # 5) Ensure ubuntu user can run docker; add to docker group (best-effort)
+            if ! groups ubuntu | grep -qw docker; then
+            echo "Adding ubuntu user to docker group (may require relogin to take effect)"
+            sudo usermod -aG docker ubuntu || true
+            fi
+
+            # 6) Decide whether to use sudo for compose commands
+            # Test docker socket access directly; if sudo is required, use a helper function to avoid array concatenation issues
+            if docker info >/dev/null 2>&1; then
+            SUDO_REQUIRED="false"
+            echo "Docker socket accessible without sudo"
+            else
+            SUDO_REQUIRED="true"
+            echo "Using sudo for Docker Compose commands"
+            fi
+
+            run_compose() {
+            if [ "$SUDO_REQUIRED" = "true" ]; then
+                sudo "${COMPOSE_CMD[@]}" "$@"
+            else
+                "${COMPOSE_CMD[@]}" "$@"
+            fi
+            }
+
+            # 7) Cleanly stop and remove containers/volumes/orphans before rebuilding
+            echo "Tearing down existing compose stack (best-effort)"
+            run_compose down --volumes --remove-orphans || echo "Warning: compose down failed, continuing"
+
+            # 8) Pull images and rebuild; tolerate pull/build failures but fail if up fails
+            echo "Pulling images (if any)"
+            run_compose pull || echo "Warning: pull failed or no images to pull"
+
+            echo "Starting compose up (build + detach)"
+            if run_compose up -d --build; then
+            echo "Compose up succeeded"
+            else
+            echo "ERROR: compose up failed; collecting diagnostics"
+            echo "Compose version:"
+            run_compose version || true
+            echo "Docker info:"
+            sudo docker info || true
+            echo "docker ps --all:"
+            sudo docker ps -a || true
+            exit 1
+            fi
+
+            # 9) Optional quick health check: list service containers
+            echo "Services:"
+            run_compose ps || true
+
+            echo "Deploy finished: $(date)"

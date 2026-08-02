@@ -165,16 +165,21 @@
               </div>
 
               <div class="question-actions">
-                <% if (isAdmin) { %>
+                <% if (isAdmin || String(question.userId) === currentUserId) { %>
                   <% if (!question.solved) { %>
                     <form action="/forum/solved/<%= question._id %>" method="POST">
                       <button type="submit" class="action-btn solved-btn">Mark as Solved</button>
                     </form>
+                  <% } else { %>
+                    <form action="/forum/unsolved/<%= question._id %>" method="POST">
+                      <button type="submit" class="action-btn solved-btn">Mark as Unsolved</button>
+                    </form>
                   <% } %>
-                  <form action="/forum/delete/<%= question._id %>" method="POST" onsubmit="return confirm('Delete this question?')">
-                    <button type="submit" class="action-btn delete-btn">Delete</button>
-                  </form>
-                <% } else if (String(question.userId) === currentUserId) { %>
+                <% } %>
+
+                <% if (isAdmin || String(question.userId) === currentUserId) { %>
+                  <a href="/forum/edit/<%= question._id %>" class="action-btn edit-btn">Edit</a>
+
                   <form action="/forum/delete/<%= question._id %>" method="POST" onsubmit="return confirm('Delete this question?')">
                     <button type="submit" class="action-btn delete-btn">Delete</button>
                   </form>
